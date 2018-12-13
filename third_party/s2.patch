@@ -1,0 +1,1878 @@
+diff --git a/src/s2/base/casts.h b/src/s2/base/casts.h
+index dae1516..84880c7 100644
+--- a/src/s2/base/casts.h
++++ b/src/s2/base/casts.h
+@@ -29,8 +29,8 @@
+ #include <climits>         // for enumeration casts and tests
+ #include <type_traits>
+ 
+-#include "s2/third_party/absl/base/casts.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/casts.h"
++#include "absl/base/macros.h"
+ 
+ // An "upcast", i.e. a conversion from a pointer to an object to a pointer to a
+ // base subobject, always succeeds if the base is unambiguous and accessible,
+diff --git a/src/s2/base/log_severity.h b/src/s2/base/log_severity.h
+index fbea38c..543990e 100644
+--- a/src/s2/base/log_severity.h
++++ b/src/s2/base/log_severity.h
+@@ -22,7 +22,7 @@
+ 
+ #else  // !defined(S2_USE_GLOG)
+ 
+-#include "s2/third_party/absl/base/log_severity.h"
++#include "absl/base/log_severity.h"
+ 
+ // Stay compatible with glog.
+ namespace google {
+diff --git a/src/s2/base/logging.h b/src/s2/base/logging.h
+index 6c64b7a..649192c 100644
+--- a/src/s2/base/logging.h
++++ b/src/s2/base/logging.h
+@@ -52,8 +52,8 @@
+ #include <iostream>
+ 
+ #include "s2/base/log_severity.h"
+-#include "s2/third_party/absl/base/attributes.h"
+-#include "s2/third_party/absl/base/log_severity.h"
++#include "absl/base/attributes.h"
++#include "absl/base/log_severity.h"
+ 
+ class S2LogMessage {
+  public:
+diff --git a/src/s2/base/port.h b/src/s2/base/port.h
+index 8cb06b5..ffa8827 100644
+--- a/src/s2/base/port.h
++++ b/src/s2/base/port.h
+@@ -36,10 +36,11 @@
+ #include <climits>
+ #include <cstdlib>
+ #include <cstring>
++#include <string>
+ 
+ #include "s2/base/integral_types.h"
+-#include "s2/third_party/absl/base/config.h"
+-#include "s2/third_party/absl/base/port.h"  // IWYU pragma: export
++#include "absl/base/config.h"
++#include "absl/base/port.h"  // IWYU pragma: export
+ 
+ #ifdef SWIG
+ %include "third_party/absl/base/port.h"
+@@ -378,7 +379,7 @@ static inline uint64 bswap_64(uint64 x) {
+ 
+ #ifdef __cplusplus
+ #ifdef STL_MSVC  // not always the same as _MSC_VER
+-#include "s2/third_party/absl/base/internal/port_hash.inc"
++#include "absl/base/internal/port_hash.inc"
+ #else
+ struct PortableHashBase {};
+ #endif  // STL_MSVC
+@@ -1031,4 +1032,6 @@ extern inline void prefetch(const void *, int) {}
+ #define STREAM_SETF(s, flag) (s).setf(std::ios::flag)
+ #endif
+ 
++using std::string;
++
+ #endif  // S2_BASE_PORT_H_
+diff --git a/src/s2/base/strtoint.h b/src/s2/base/strtoint.h
+index 20aeda7..acea0f2 100644
+--- a/src/s2/base/strtoint.h
++++ b/src/s2/base/strtoint.h
+@@ -48,7 +48,7 @@
+ #include <string>
+ #include "s2/base/integral_types.h"
+ #include "s2/base/port.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ 
+ // Adapter functions for handling overflow and errno.
+ int32 strto32_adapter(const char *nptr, char **endptr, int base);
+diff --git a/src/s2/encoded_s2cell_id_vector.h b/src/s2/encoded_s2cell_id_vector.h
+index afc738c..3b2e7f4 100644
+--- a/src/s2/encoded_s2cell_id_vector.h
++++ b/src/s2/encoded_s2cell_id_vector.h
+@@ -18,7 +18,7 @@
+ #ifndef S2_ENCODED_S2CELL_ID_VECTOR_H_
+ #define S2_ENCODED_S2CELL_ID_VECTOR_H_
+ 
+-#include "s2/third_party/absl/types/span.h"
++#include "absl/types/span.h"
+ #include "s2/encoded_uint_vector.h"
+ #include "s2/s2cell_id.h"
+ 
+diff --git a/src/s2/encoded_s2cell_id_vector_test.cc b/src/s2/encoded_s2cell_id_vector_test.cc
+index eb52a46..7ef6c5f 100644
+--- a/src/s2/encoded_s2cell_id_vector_test.cc
++++ b/src/s2/encoded_s2cell_id_vector_test.cc
+@@ -19,7 +19,7 @@
+ 
+ #include <vector>
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s2loop.h"
+ #include "s2/s2pointutil.h"
+ #include "s2/s2shape_index.h"
+diff --git a/src/s2/encoded_s2point_vector.h b/src/s2/encoded_s2point_vector.h
+index f3654de..a653bd9 100644
+--- a/src/s2/encoded_s2point_vector.h
++++ b/src/s2/encoded_s2point_vector.h
+@@ -18,7 +18,7 @@
+ #ifndef S2_ENCODED_S2POINT_VECTOR_H_
+ #define S2_ENCODED_S2POINT_VECTOR_H_
+ 
+-#include "s2/third_party/absl/types/span.h"
++#include "absl/types/span.h"
+ #include "s2/encoded_uint_vector.h"
+ #include "s2/s2point.h"
+ 
+diff --git a/src/s2/encoded_s2shape_index.cc b/src/s2/encoded_s2shape_index.cc
+index d3c3a54..0d468fb 100644
+--- a/src/s2/encoded_s2shape_index.cc
++++ b/src/s2/encoded_s2shape_index.cc
+@@ -18,7 +18,7 @@
+ #include "s2/encoded_s2shape_index.h"
+ 
+ #include <memory>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ 
+ using absl::make_unique;
+diff --git a/src/s2/encoded_s2shape_index_test.cc b/src/s2/encoded_s2shape_index_test.cc
+index cb9608b..eadf011 100644
+--- a/src/s2/encoded_s2shape_index_test.cc
++++ b/src/s2/encoded_s2shape_index_test.cc
+@@ -20,8 +20,8 @@
+ #include <map>
+ #include <vector>
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_cat.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2builder.h"
+ #include "s2/s2builderutil_s2polyline_layer.h"
+diff --git a/src/s2/encoded_string_vector.h b/src/s2/encoded_string_vector.h
+index 5808cd7..939b398 100644
+--- a/src/s2/encoded_string_vector.h
++++ b/src/s2/encoded_string_vector.h
+@@ -20,8 +20,8 @@
+ 
+ #include <memory>
+ #include <string>
+-#include "s2/third_party/absl/strings/string_view.h"
+-#include "s2/third_party/absl/types/span.h"
++#include "absl/strings/string_view.h"
++#include "absl/types/span.h"
+ #include "s2/encoded_uint_vector.h"
+ 
+ namespace s2coding {
+diff --git a/src/s2/encoded_string_vector_test.cc b/src/s2/encoded_string_vector_test.cc
+index 6512e43..c4e6451 100644
+--- a/src/s2/encoded_string_vector_test.cc
++++ b/src/s2/encoded_string_vector_test.cc
+@@ -19,7 +19,7 @@
+ 
+ #include <vector>
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/strings/string_view.h"
++#include "absl/strings/string_view.h"
+ 
+ using absl::string_view;
+ using std::vector;
+diff --git a/src/s2/encoded_uint_vector.h b/src/s2/encoded_uint_vector.h
+index 30a18a4..acce626 100644
+--- a/src/s2/encoded_uint_vector.h
++++ b/src/s2/encoded_uint_vector.h
+@@ -20,8 +20,8 @@
+ 
+ #include <type_traits>
+ #include <vector>
+-#include "s2/third_party/absl/base/internal/unaligned_access.h"
+-#include "s2/third_party/absl/types/span.h"
++#include "absl/base/internal/unaligned_access.h"
++#include "absl/types/span.h"
+ #include "s2/util/coding/coder.h"
+ 
+ namespace s2coding {
+diff --git a/src/s2/mutable_s2shape_index.h b/src/s2/mutable_s2shape_index.h
+index e65363b..bd0bf93 100644
+--- a/src/s2/mutable_s2shape_index.h
++++ b/src/s2/mutable_s2shape_index.h
+@@ -35,9 +35,9 @@
+ #include "s2/s2pointutil.h"
+ #include "s2/s2shape.h"
+ #include "s2/s2shape_index.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/base/thread_annotations.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/base/macros.h"
++#include "absl/base/thread_annotations.h"
++#include "absl/memory/memory.h"
+ #include "s2/util/gtl/btree_map.h"
+ 
+ // MutableS2ShapeIndex is a class for in-memory indexing of polygonal geometry.
+diff --git a/src/s2/mutable_s2shape_index_test.cc b/src/s2/mutable_s2shape_index_test.cc
+index 77d9c45..b429fd7 100644
+--- a/src/s2/mutable_s2shape_index_test.cc
++++ b/src/s2/mutable_s2shape_index_test.cc
+@@ -50,7 +50,7 @@
+ #include "s2/s2shapeutil_visit_crossing_edge_pairs.h"
+ #include "s2/s2testing.h"
+ #include "s2/s2text_format.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ 
+ using absl::WrapUnique;
+ using absl::make_unique;
+diff --git a/src/s2/s2boolean_operation.cc b/src/s2/s2boolean_operation.cc
+index b7b5a04..d3252cb 100644
+--- a/src/s2/s2boolean_operation.cc
++++ b/src/s2/s2boolean_operation.cc
+@@ -69,7 +69,7 @@
+ #include <memory>
+ #include <utility>
+ 
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s2builder.h"
+ #include "s2/s2builder_layer.h"
+ #include "s2/s2builderutil_snap_functions.h"
+diff --git a/src/s2/s2boolean_operation_test.cc b/src/s2/s2boolean_operation_test.cc
+index fb8cc98..80c96b3 100644
+--- a/src/s2/s2boolean_operation_test.cc
++++ b/src/s2/s2boolean_operation_test.cc
+@@ -19,9 +19,9 @@
+ 
+ #include <memory>
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_split.h"
+-#include "s2/third_party/absl/strings/strip.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_split.h"
++#include "absl/strings/strip.h"
+ #include "s2/s2builder.h"
+ #include "s2/s2builder_graph.h"
+ #include "s2/s2builder_layer.h"
+diff --git a/src/s2/s2builder.cc b/src/s2/s2builder.cc
+index 5ee5acf..c14c049 100644
+--- a/src/s2/s2builder.cc
++++ b/src/s2/s2builder.cc
+@@ -79,7 +79,7 @@
+ 
+ #include "s2/base/casts.h"
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/util/bits/bits.h"
+ #include "s2/id_set_lexicon.h"
+ #include "s2/mutable_s2shape_index.h"
+diff --git a/src/s2/s2builder.h b/src/s2/s2builder.h
+index 308583e..32bf0e0 100644
+--- a/src/s2/s2builder.h
++++ b/src/s2/s2builder.h
+@@ -25,7 +25,7 @@
+ #include <utility>
+ #include <vector>
+ #include "s2/base/integral_types.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/id_set_lexicon.h"
+ #include "s2/mutable_s2shape_index.h"
+diff --git a/src/s2/s2builder_graph_test.cc b/src/s2/s2builder_graph_test.cc
+index 9c64783..cbc5a86 100644
+--- a/src/s2/s2builder_graph_test.cc
++++ b/src/s2/s2builder_graph_test.cc
+@@ -25,7 +25,7 @@
+ #include <vector>
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/id_set_lexicon.h"
+ #include "s2/s2builderutil_testing.h"
+ #include "s2/s2lax_polyline_shape.h"
+diff --git a/src/s2/s2builder_test.cc b/src/s2/s2builder_test.cc
+index 0360b9a..736cdbb 100644
+--- a/src/s2/s2builder_test.cc
++++ b/src/s2/s2builder_test.cc
+@@ -30,9 +30,9 @@
+ #include "s2/base/log_severity.h"
+ #include "s2/base/timer.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
+-#include "s2/third_party/absl/strings/str_join.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_cat.h"
++#include "absl/strings/str_join.h"
+ #include "s2/s2builder_layer.h"
+ #include "s2/s2builderutil_s2polygon_layer.h"
+ #include "s2/s2builderutil_s2polyline_layer.h"
+diff --git a/src/s2/s2builderutil_closed_set_normalizer.cc b/src/s2/s2builderutil_closed_set_normalizer.cc
+index 4b3bd44..8be85f7 100644
+--- a/src/s2/s2builderutil_closed_set_normalizer.cc
++++ b/src/s2/s2builderutil_closed_set_normalizer.cc
+@@ -19,7 +19,7 @@
+ 
+ #include <memory>
+ 
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s2builder_layer.h"
+ 
+ using absl::make_unique;
+diff --git a/src/s2/s2builderutil_closed_set_normalizer_test.cc b/src/s2/s2builderutil_closed_set_normalizer_test.cc
+index d35e4e5..cb5f916 100644
+--- a/src/s2/s2builderutil_closed_set_normalizer_test.cc
++++ b/src/s2/s2builderutil_closed_set_normalizer_test.cc
+@@ -20,7 +20,7 @@
+ #include <memory>
+ #include <vector>
+ 
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2boolean_operation.h"
+ #include "s2/s2builder.h"
+diff --git a/src/s2/s2builderutil_find_polygon_degeneracies.cc b/src/s2/s2builderutil_find_polygon_degeneracies.cc
+index 7f84864..49785c3 100644
+--- a/src/s2/s2builderutil_find_polygon_degeneracies.cc
++++ b/src/s2/s2builderutil_find_polygon_degeneracies.cc
+@@ -21,7 +21,7 @@
+ #include <utility>
+ #include <vector>
+ 
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2builder_graph.h"
+ #include "s2/s2contains_vertex_query.h"
+diff --git a/src/s2/s2builderutil_find_polygon_degeneracies_test.cc b/src/s2/s2builderutil_find_polygon_degeneracies_test.cc
+index 9770ebd..605fe38 100644
+--- a/src/s2/s2builderutil_find_polygon_degeneracies_test.cc
++++ b/src/s2/s2builderutil_find_polygon_degeneracies_test.cc
+@@ -30,7 +30,7 @@
+ #include "s2/s2testing.h"
+ #include "s2/s2text_format.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ 
+ using absl::make_unique;
+ using std::unique_ptr;
+diff --git a/src/s2/s2builderutil_s2point_vector_layer.h b/src/s2/s2builderutil_s2point_vector_layer.h
+index 5b51b86..b7d210a 100644
+--- a/src/s2/s2builderutil_s2point_vector_layer.h
++++ b/src/s2/s2builderutil_s2point_vector_layer.h
+@@ -21,7 +21,7 @@
+ #include <memory>
+ #include <vector>
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/id_set_lexicon.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2builder.h"
+diff --git a/src/s2/s2builderutil_s2point_vector_layer_test.cc b/src/s2/s2builderutil_s2point_vector_layer_test.cc
+index 877ecbe..dee3d7f 100644
+--- a/src/s2/s2builderutil_s2point_vector_layer_test.cc
++++ b/src/s2/s2builderutil_s2point_vector_layer_test.cc
+@@ -22,7 +22,7 @@
+ #include "s2/base/casts.h"
+ #include "s2/base/integral_types.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2text_format.h"
+ 
+diff --git a/src/s2/s2builderutil_s2polygon_layer.cc b/src/s2/s2builderutil_s2polygon_layer.cc
+index e51d3b7..b37a8bc 100644
+--- a/src/s2/s2builderutil_s2polygon_layer.cc
++++ b/src/s2/s2builderutil_s2polygon_layer.cc
+@@ -19,7 +19,7 @@
+ 
+ #include <algorithm>
+ #include <memory>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s2debug.h"
+ 
+ using absl::make_unique;
+diff --git a/src/s2/s2builderutil_s2polygon_layer.h b/src/s2/s2builderutil_s2polygon_layer.h
+index 3152b81..afe84ab 100644
+--- a/src/s2/s2builderutil_s2polygon_layer.h
++++ b/src/s2/s2builderutil_s2polygon_layer.h
+@@ -36,7 +36,7 @@
+ #include <utility>
+ #include <vector>
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/id_set_lexicon.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2builder.h"
+diff --git a/src/s2/s2builderutil_s2polygon_layer_test.cc b/src/s2/s2builderutil_s2polygon_layer_test.cc
+index bfc8fb8..be18597 100644
+--- a/src/s2/s2builderutil_s2polygon_layer_test.cc
++++ b/src/s2/s2builderutil_s2polygon_layer_test.cc
+@@ -25,7 +25,7 @@
+ #include "s2/base/casts.h"
+ #include "s2/base/integral_types.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2debug.h"
+ #include "s2/s2text_format.h"
+diff --git a/src/s2/s2builderutil_s2polyline_layer.h b/src/s2/s2builderutil_s2polyline_layer.h
+index 92344fd..c38d280 100644
+--- a/src/s2/s2builderutil_s2polyline_layer.h
++++ b/src/s2/s2builderutil_s2polyline_layer.h
+@@ -21,7 +21,7 @@
+ #include <memory>
+ #include <vector>
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/id_set_lexicon.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2builder.h"
+diff --git a/src/s2/s2builderutil_s2polyline_layer_test.cc b/src/s2/s2builderutil_s2polyline_layer_test.cc
+index 915abde..be05d5f 100644
+--- a/src/s2/s2builderutil_s2polyline_layer_test.cc
++++ b/src/s2/s2builderutil_s2polyline_layer_test.cc
+@@ -21,7 +21,7 @@
+ #include "s2/base/casts.h"
+ #include "s2/base/integral_types.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s2builderutil_snap_functions.h"
+ #include "s2/s2debug.h"
+ #include "s2/s2text_format.h"
+diff --git a/src/s2/s2builderutil_s2polyline_vector_layer.h b/src/s2/s2builderutil_s2polyline_vector_layer.h
+index 7cd6bea..ea95106 100644
+--- a/src/s2/s2builderutil_s2polyline_vector_layer.h
++++ b/src/s2/s2builderutil_s2polyline_vector_layer.h
+@@ -21,7 +21,7 @@
+ #include <memory>
+ #include <vector>
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/id_set_lexicon.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2builder.h"
+diff --git a/src/s2/s2builderutil_s2polyline_vector_layer_test.cc b/src/s2/s2builderutil_s2polyline_vector_layer_test.cc
+index 10c7fa0..d52e5ee 100644
+--- a/src/s2/s2builderutil_s2polyline_vector_layer_test.cc
++++ b/src/s2/s2builderutil_s2polyline_vector_layer_test.cc
+@@ -22,8 +22,8 @@
+ #include "s2/base/casts.h"
+ #include "s2/base/integral_types.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_join.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_join.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2builderutil_snap_functions.h"
+ #include "s2/s2text_format.h"
+diff --git a/src/s2/s2builderutil_snap_functions.cc b/src/s2/s2builderutil_snap_functions.cc
+index 1e82e76..55fe61d 100644
+--- a/src/s2/s2builderutil_snap_functions.cc
++++ b/src/s2/s2builderutil_snap_functions.cc
+@@ -23,7 +23,7 @@
+ #include <memory>
+ #include "s2/base/integral_types.h"
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s2cell_id.h"
+ #include "s2/s2latlng.h"
+ #include "s2/s2metrics.h"
+diff --git a/src/s2/s2builderutil_testing.h b/src/s2/s2builderutil_testing.h
+index ce62182..87e6d5f 100644
+--- a/src/s2/s2builderutil_testing.h
++++ b/src/s2/s2builderutil_testing.h
+@@ -20,7 +20,7 @@
+ 
+ #include <vector>
+ 
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s2builder.h"
+ #include "s2/s2builder_graph.h"
+ #include "s2/s2builder_layer.h"
+diff --git a/src/s2/s2builderutil_testing_test.cc b/src/s2/s2builderutil_testing_test.cc
+index 1f8b63d..0e94cfa 100644
+--- a/src/s2/s2builderutil_testing_test.cc
++++ b/src/s2/s2builderutil_testing_test.cc
+@@ -20,7 +20,7 @@
+ #include <memory>
+ #include <vector>
+ 
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include <gtest/gtest.h>
+ 
+ using absl::make_unique;
+diff --git a/src/s2/s2cell_id.cc b/src/s2/s2cell_id.cc
+index ac7bb35..0571e79 100644
+--- a/src/s2/s2cell_id.cc
++++ b/src/s2/s2cell_id.cc
+@@ -30,8 +30,8 @@
+ #include "s2/r1interval.h"
+ #include "s2/s2coords.h"
+ #include "s2/s2latlng.h"
+-#include "s2/third_party/absl/base/casts.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/base/casts.h"
++#include "absl/strings/str_cat.h"
+ 
+ using absl::StrCat;
+ using S2::internal::kSwapMask;
+diff --git a/src/s2/s2cell_id.h b/src/s2/s2cell_id.h
+index 1f8fff2..160edae 100644
+--- a/src/s2/s2cell_id.h
++++ b/src/s2/s2cell_id.h
+@@ -32,7 +32,7 @@
+ #include "s2/r2rect.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2coords.h"
+-#include "s2/third_party/absl/strings/string_view.h"
++#include "absl/strings/string_view.h"
+ #include "s2/util/bits/bits.h"
+ #include "s2/util/coding/coder.h"
+ 
+diff --git a/src/s2/s2cell_id_test.cc b/src/s2/s2cell_id_test.cc
+index 1627997..81e1c41 100644
+--- a/src/s2/s2cell_id_test.cc
++++ b/src/s2/s2cell_id_test.cc
+@@ -35,7 +35,7 @@
+ #include "s2/s2latlng.h"
+ #include "s2/s2metrics.h"
+ #include "s2/s2testing.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ 
+ using S2::internal::kPosToOrientation;
+ using std::fabs;
+diff --git a/src/s2/s2cell_test.cc b/src/s2/s2cell_test.cc
+index 00bf763..8976aad 100644
+--- a/src/s2/s2cell_test.cc
++++ b/src/s2/s2cell_test.cc
+@@ -46,9 +46,9 @@
+ #include "s2/s2pointutil.h"
+ #include "s2/s2testing.h"
+ #include "s2/s2text_format.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/base/macros.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_cat.h"
+ 
+ using absl::StrCat;
+ using absl::make_unique;
+diff --git a/src/s2/s2cell_union.h b/src/s2/s2cell_union.h
+index 9feeb2b..0eedb91 100644
+--- a/src/s2/s2cell_union.h
++++ b/src/s2/s2cell_union.h
+@@ -26,7 +26,7 @@
+ #include "s2/_fp_contract_off.h"
+ #include "s2/s2cell_id.h"
+ #include "s2/s2region.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ 
+ class Decoder;
+ class Encoder;
+diff --git a/src/s2/s2cell_union_test.cc b/src/s2/s2cell_union_test.cc
+index 47502f7..dff314e 100644
+--- a/src/s2/s2cell_union_test.cc
++++ b/src/s2/s2cell_union_test.cc
+@@ -34,7 +34,7 @@
+ #include "s2/s2metrics.h"
+ #include "s2/s2region_coverer.h"
+ #include "s2/s2testing.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/strings/str_cat.h"
+ #include "s2/util/coding/coder.h"
+ 
+ using absl::StrCat;
+diff --git a/src/s2/s2closest_cell_query.cc b/src/s2/s2closest_cell_query.cc
+index ac6fea9..b69c866 100644
+--- a/src/s2/s2closest_cell_query.cc
++++ b/src/s2/s2closest_cell_query.cc
+@@ -18,7 +18,7 @@
+ #include "s2/s2closest_cell_query.h"
+ 
+ #include <memory>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2cell.h"
+diff --git a/src/s2/s2closest_cell_query_base.h b/src/s2/s2closest_cell_query_base.h
+index 26618bc..8542709 100644
+--- a/src/s2/s2closest_cell_query_base.h
++++ b/src/s2/s2closest_cell_query_base.h
+@@ -23,7 +23,7 @@
+ #include <vector>
+ 
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/container/inlined_vector.h"
++#include "absl/container/inlined_vector.h"
+ #include "s2/s1chord_angle.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2cell_id.h"
+diff --git a/src/s2/s2closest_cell_query_test.cc b/src/s2/s2closest_cell_query_test.cc
+index b63a990..19df356 100644
+--- a/src/s2/s2closest_cell_query_test.cc
++++ b/src/s2/s2closest_cell_query_test.cc
+@@ -23,7 +23,7 @@
+ 
+ #include "s2/base/stringprintf.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2cap.h"
+diff --git a/src/s2/s2closest_edge_query.cc b/src/s2/s2closest_edge_query.cc
+index 23dde3b..534cf45 100644
+--- a/src/s2/s2closest_edge_query.cc
++++ b/src/s2/s2closest_edge_query.cc
+@@ -18,7 +18,7 @@
+ #include "s2/s2closest_edge_query.h"
+ 
+ #include <memory>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2cell.h"
+diff --git a/src/s2/s2closest_edge_query.h b/src/s2/s2closest_edge_query.h
+index c4b6c3a..e689db9 100644
+--- a/src/s2/s2closest_edge_query.h
++++ b/src/s2/s2closest_edge_query.h
+@@ -24,8 +24,8 @@
+ #include <vector>
+ 
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/container/inlined_vector.h"
++#include "absl/base/macros.h"
++#include "absl/container/inlined_vector.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/s1angle.h"
+ #include "s2/s1chord_angle.h"
+diff --git a/src/s2/s2closest_edge_query_base.h b/src/s2/s2closest_edge_query_base.h
+index 6ad3ee1..24990ab 100644
+--- a/src/s2/s2closest_edge_query_base.h
++++ b/src/s2/s2closest_edge_query_base.h
+@@ -22,7 +22,7 @@
+ #include <vector>
+ 
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/container/inlined_vector.h"
++#include "absl/container/inlined_vector.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/s1angle.h"
+ #include "s2/s1chord_angle.h"
+diff --git a/src/s2/s2closest_edge_query_test.cc b/src/s2/s2closest_edge_query_test.cc
+index 3aa1836..9f81c2f 100644
+--- a/src/s2/s2closest_edge_query_test.cc
++++ b/src/s2/s2closest_edge_query_test.cc
+@@ -21,7 +21,7 @@
+ #include <vector>
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/encoded_s2shape_index.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s1angle.h"
+diff --git a/src/s2/s2closest_point_query_base.h b/src/s2/s2closest_point_query_base.h
+index 56ea98b..aef44fd 100644
+--- a/src/s2/s2closest_point_query_base.h
++++ b/src/s2/s2closest_point_query_base.h
+@@ -23,7 +23,7 @@
+ #include <vector>
+ 
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/container/inlined_vector.h"
++#include "absl/container/inlined_vector.h"
+ #include "s2/s1chord_angle.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2cell_id.h"
+diff --git a/src/s2/s2closest_point_query_test.cc b/src/s2/s2closest_point_query_test.cc
+index 0a9b308..2ce8011 100644
+--- a/src/s2/s2closest_point_query_test.cc
++++ b/src/s2/s2closest_point_query_test.cc
+@@ -21,7 +21,7 @@
+ #include <vector>
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2cell_id.h"
+diff --git a/src/s2/s2contains_point_query_test.cc b/src/s2/s2contains_point_query_test.cc
+index fa57935..cb36025 100644
+--- a/src/s2/s2contains_point_query_test.cc
++++ b/src/s2/s2contains_point_query_test.cc
+@@ -20,7 +20,7 @@
+ #include <memory>
+ #include "s2/base/casts.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2loop.h"
+diff --git a/src/s2/s2convex_hull_query.cc b/src/s2/s2convex_hull_query.cc
+index e7c291a..aaee545 100644
+--- a/src/s2/s2convex_hull_query.cc
++++ b/src/s2/s2convex_hull_query.cc
+@@ -25,7 +25,7 @@
+ 
+ #include "s2/s2convex_hull_query.h"
+ 
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s2pointutil.h"
+ #include "s2/s2predicates.h"
+ 
+diff --git a/src/s2/s2crossing_edge_query.h b/src/s2/s2crossing_edge_query.h
+index 0cb73f9..fdf7d19 100644
+--- a/src/s2/s2crossing_edge_query.h
++++ b/src/s2/s2crossing_edge_query.h
+@@ -21,8 +21,8 @@
+ #include <type_traits>
+ #include <vector>
+ 
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/container/inlined_vector.h"
++#include "absl/base/macros.h"
++#include "absl/container/inlined_vector.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/r2.h"
+ #include "s2/r2rect.h"
+diff --git a/src/s2/s2crossing_edge_query_test.cc b/src/s2/s2crossing_edge_query_test.cc
+index 370054e..6c008ff 100644
+--- a/src/s2/s2crossing_edge_query_test.cc
++++ b/src/s2/s2crossing_edge_query_test.cc
+@@ -37,8 +37,8 @@
+ #include "s2/s2polyline.h"
+ #include "s2/s2testing.h"
+ #include "s2/s2text_format.h"
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_cat.h"
+ 
+ using absl::StrCat;
+ using absl::make_unique;
+diff --git a/src/s2/s2edge_clipping.h b/src/s2/s2edge_clipping.h
+index 9cf7942..4ce308b 100644
+--- a/src/s2/s2edge_clipping.h
++++ b/src/s2/s2edge_clipping.h
+@@ -31,7 +31,7 @@
+ #include <cmath>
+ 
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/container/inlined_vector.h"
++#include "absl/container/inlined_vector.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/r2.h"
+ #include "s2/r2rect.h"
+diff --git a/src/s2/s2edge_clipping_test.cc b/src/s2/s2edge_clipping_test.cc
+index 9f88fa4..583de7f 100644
+--- a/src/s2/s2edge_clipping_test.cc
++++ b/src/s2/s2edge_clipping_test.cc
+@@ -24,7 +24,7 @@
+ 
+ #include "s2/base/logging.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/strings/str_cat.h"
+ #include "s2/r1interval.h"
+ #include "s2/r2rect.h"
+ #include "s2/s1chord_angle.h"
+diff --git a/src/s2/s2edge_crossings.h b/src/s2/s2edge_crossings.h
+index 8be4e1a..78f6961 100644
+--- a/src/s2/s2edge_crossings.h
++++ b/src/s2/s2edge_crossings.h
+@@ -32,8 +32,8 @@
+ #include <cmath>
+ 
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/container/inlined_vector.h"
++#include "absl/base/macros.h"
++#include "absl/container/inlined_vector.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/r2.h"
+ #include "s2/r2rect.h"
+diff --git a/src/s2/s2furthest_edge_query.h b/src/s2/s2furthest_edge_query.h
+index 30530bf..1dbed4a 100644
+--- a/src/s2/s2furthest_edge_query.h
++++ b/src/s2/s2furthest_edge_query.h
+@@ -22,8 +22,8 @@
+ #include <vector>
+ 
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/container/inlined_vector.h"
++#include "absl/base/macros.h"
++#include "absl/container/inlined_vector.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/s1angle.h"
+ #include "s2/s1chord_angle.h"
+diff --git a/src/s2/s2furthest_edge_query_test.cc b/src/s2/s2furthest_edge_query_test.cc
+index 4ffe156..5099d12 100644
+--- a/src/s2/s2furthest_edge_query_test.cc
++++ b/src/s2/s2furthest_edge_query_test.cc
+@@ -18,7 +18,7 @@
+ #include <vector>
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2cap.h"
+diff --git a/src/s2/s2latlng.h b/src/s2/s2latlng.h
+index 643eb33..40f5118 100644
+--- a/src/s2/s2latlng.h
++++ b/src/s2/s2latlng.h
+@@ -24,6 +24,7 @@
+ #include <string>
+ 
+ #include "s2/base/integral_types.h"
++#include "s2/base/port.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/r2.h"
+ #include "s2/s1angle.h"
+diff --git a/src/s2/s2latlng_rect_bounder_test.cc b/src/s2/s2latlng_rect_bounder_test.cc
+index eb05be8..eaceeb8 100644
+--- a/src/s2/s2latlng_rect_bounder_test.cc
++++ b/src/s2/s2latlng_rect_bounder_test.cc
+@@ -22,7 +22,7 @@
+ #include <vector>
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/strings/str_cat.h"
+ #include "s2/s2edge_distances.h"
+ #include "s2/s2pointutil.h"
+ #include "s2/s2testing.h"
+diff --git a/src/s2/s2latlng_test.cc b/src/s2/s2latlng_test.cc
+index 194a394..90aafaa 100644
+--- a/src/s2/s2latlng_test.cc
++++ b/src/s2/s2latlng_test.cc
+@@ -26,8 +26,8 @@
+ #include "s2/base/logging.h"
+ #include "s2/s2pointutil.h"
+ #include "s2/s2testing.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/base/macros.h"
++#include "absl/strings/str_cat.h"
+ 
+ using absl::StrCat;
+ using std::fabs;
+diff --git a/src/s2/s2lax_polygon_shape.h b/src/s2/s2lax_polygon_shape.h
+index 6b17b32..a3360b8 100644
+--- a/src/s2/s2lax_polygon_shape.h
++++ b/src/s2/s2lax_polygon_shape.h
+@@ -21,7 +21,7 @@
+ #include <memory>
+ #include <vector>
+ 
+-#include "s2/third_party/absl/types/span.h"
++#include "absl/types/span.h"
+ #include "s2/encoded_uint_vector.h"
+ #include "s2/encoded_s2point_vector.h"
+ #include "s2/s2polygon.h"
+diff --git a/src/s2/s2lax_polygon_shape_test.cc b/src/s2/s2lax_polygon_shape_test.cc
+index 9912198..f4411d0 100644
+--- a/src/s2/s2lax_polygon_shape_test.cc
++++ b/src/s2/s2lax_polygon_shape_test.cc
+@@ -20,7 +20,7 @@
+ #include <vector>
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2contains_point_query.h"
+diff --git a/src/s2/s2loop.cc b/src/s2/s2loop.cc
+index 8d2d075..2d23ddc 100644
+--- a/src/s2/s2loop.cc
++++ b/src/s2/s2loop.cc
+@@ -53,8 +53,8 @@
+ #include "s2/s2shape_index.h"
+ #include "s2/s2shapeutil_visit_crossing_edge_pairs.h"
+ #include "s2/s2wedge_relations.h"
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/types/span.h"
++#include "absl/memory/memory.h"
++#include "absl/types/span.h"
+ #include "s2/util/coding/coder.h"
+ #include "s2/util/coding/coder.h"
+ #include "s2/util/math/matrix3x3.h"
+diff --git a/src/s2/s2loop.h b/src/s2/s2loop.h
+index a26a52d..4bc95ca 100644
+--- a/src/s2/s2loop.h
++++ b/src/s2/s2loop.h
+@@ -37,7 +37,7 @@
+ #include "s2/s2pointutil.h"
+ #include "s2/s2region.h"
+ #include "s2/s2shape_index.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ #include "s2/util/math/matrix3x3.h"
+ #include "s2/util/math/vector.h"
+ 
+diff --git a/src/s2/s2loop_measures.cc b/src/s2/s2loop_measures.cc
+index d0b416c..e53df6e 100644
+--- a/src/s2/s2loop_measures.cc
++++ b/src/s2/s2loop_measures.cc
+@@ -21,7 +21,7 @@
+ #include <cmath>
+ #include <vector>
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/container/inlined_vector.h"
++#include "absl/container/inlined_vector.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2centroids.h"
+ #include "s2/s2edge_distances.h"
+diff --git a/src/s2/s2loop_test.cc b/src/s2/s2loop_test.cc
+index 37fe239..d8a6c75 100644
+--- a/src/s2/s2loop_test.cc
++++ b/src/s2/s2loop_test.cc
+@@ -49,8 +49,8 @@
+ #include "s2/s2predicates.h"
+ #include "s2/s2testing.h"
+ #include "s2/s2text_format.h"
+-#include "s2/third_party/absl/container/fixed_array.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/container/fixed_array.h"
++#include "absl/memory/memory.h"
+ #include "s2/util/math/matrix3x3.h"
+ #include "s2/util/math/vector.h"
+ 
+diff --git a/src/s2/s2max_distance_targets.cc b/src/s2/s2max_distance_targets.cc
+index 2f1ec31..e093ec0 100644
+--- a/src/s2/s2max_distance_targets.cc
++++ b/src/s2/s2max_distance_targets.cc
+@@ -16,7 +16,7 @@
+ #include "s2/s2max_distance_targets.h"
+ 
+ #include <memory>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2cell.h"
+diff --git a/src/s2/s2min_distance_targets.cc b/src/s2/s2min_distance_targets.cc
+index b3154a3..344a681 100644
+--- a/src/s2/s2min_distance_targets.cc
++++ b/src/s2/s2min_distance_targets.cc
+@@ -18,7 +18,7 @@
+ #include "s2/s2min_distance_targets.h"
+ 
+ #include <memory>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2cell.h"
+diff --git a/src/s2/s2point_compression.cc b/src/s2/s2point_compression.cc
+index e10f896..31eb2ad 100644
+--- a/src/s2/s2point_compression.cc
++++ b/src/s2/s2point_compression.cc
+@@ -23,10 +23,10 @@
+ #include "s2/base/logging.h"
+ #include "s2/s2cell_id.h"
+ #include "s2/s2coords.h"
+-#include "s2/third_party/absl/base/casts.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/container/fixed_array.h"
+-#include "s2/third_party/absl/types/span.h"
++#include "absl/base/casts.h"
++#include "absl/base/macros.h"
++#include "absl/container/fixed_array.h"
++#include "absl/types/span.h"
+ #include "s2/util/bits/bit-interleave.h"
+ #include "s2/util/coding/coder.h"
+ #include "s2/util/coding/nth-derivative.h"
+diff --git a/src/s2/s2point_compression.h b/src/s2/s2point_compression.h
+index 4459210..ed4742c 100644
+--- a/src/s2/s2point_compression.h
++++ b/src/s2/s2point_compression.h
+@@ -46,7 +46,7 @@
+ #ifndef S2_S2POINT_COMPRESSION_H_
+ #define S2_S2POINT_COMPRESSION_H_
+ 
+-#include "s2/third_party/absl/types/span.h"
++#include "absl/types/span.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/s1angle.h"
+ 
+diff --git a/src/s2/s2point_compression_test.cc b/src/s2/s2point_compression_test.cc
+index f396dcf..97323f0 100644
+--- a/src/s2/s2point_compression_test.cc
++++ b/src/s2/s2point_compression_test.cc
+@@ -29,8 +29,8 @@
+ #include "s2/s2coords.h"
+ #include "s2/s2testing.h"
+ #include "s2/s2text_format.h"
+-#include "s2/third_party/absl/container/fixed_array.h"
+-#include "s2/third_party/absl/types/span.h"
++#include "absl/container/fixed_array.h"
++#include "absl/types/span.h"
+ #include "s2/util/coding/coder.h"
+ 
+ using absl::FixedArray;
+diff --git a/src/s2/s2point_region.h b/src/s2/s2point_region.h
+index 077c996..9123d6b 100644
+--- a/src/s2/s2point_region.h
++++ b/src/s2/s2point_region.h
+@@ -23,7 +23,7 @@
+ #include "s2/s1angle.h"
+ #include "s2/s2pointutil.h"
+ #include "s2/s2region.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ 
+ class Decoder;
+ class Encoder;
+diff --git a/src/s2/s2point_span.h b/src/s2/s2point_span.h
+index bdc9565..8a30822 100644
+--- a/src/s2/s2point_span.h
++++ b/src/s2/s2point_span.h
+@@ -19,7 +19,7 @@
+ #define S2_S2POINT_SPAN_H_
+ 
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/types/span.h"
++#include "absl/types/span.h"
+ #include "s2/s2point.h"
+ 
+ // S2PointSpan represents a view of an S2Point array.  It is used to pass
+diff --git a/src/s2/s2polygon.cc b/src/s2/s2polygon.cc
+index be0d09b..74df010 100644
+--- a/src/s2/s2polygon.cc
++++ b/src/s2/s2polygon.cc
+@@ -64,9 +64,9 @@
+ #include "s2/s2shape_index.h"
+ #include "s2/s2shape_index_region.h"
+ #include "s2/s2shapeutil_visit_crossing_edge_pairs.h"
+-#include "s2/third_party/absl/container/fixed_array.h"
+-#include "s2/third_party/absl/container/inlined_vector.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/container/fixed_array.h"
++#include "absl/container/inlined_vector.h"
++#include "absl/memory/memory.h"
+ #include "s2/util/coding/coder.h"
+ 
+ using absl::make_unique;
+diff --git a/src/s2/s2polygon.h b/src/s2/s2polygon.h
+index 6b86e28..580b786 100644
+--- a/src/s2/s2polygon.h
++++ b/src/s2/s2polygon.h
+@@ -24,7 +24,7 @@
+ #include <vector>
+ 
+ #include "s2/base/integral_types.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s1angle.h"
+diff --git a/src/s2/s2polygon_test.cc b/src/s2/s2polygon_test.cc
+index 13aee9d..90be6e3 100644
+--- a/src/s2/s2polygon_test.cc
++++ b/src/s2/s2polygon_test.cc
+@@ -59,10 +59,10 @@
+ #include "s2/s2testing.h"
+ #include "s2/s2text_format.h"
+ #include "s2/strings/serialize.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/container/fixed_array.h"
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/base/macros.h"
++#include "absl/container/fixed_array.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_cat.h"
+ #include "s2/util/coding/coder.h"
+ #include "s2/util/gtl/legacy_random_shuffle.h"
+ #include "s2/util/math/matrix3x3.h"
+diff --git a/src/s2/s2polyline.cc b/src/s2/s2polyline.cc
+index e61f101..acd02e5 100644
+--- a/src/s2/s2polyline.cc
++++ b/src/s2/s2polyline.cc
+@@ -26,7 +26,7 @@
+ 
+ #include "s2/base/commandlineflags.h"
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/utility/utility.h"
++#include "absl/utility/utility.h"
+ #include "s2/util/coding/coder.h"
+ #include "s2/s1angle.h"
+ #include "s2/s1interval.h"
+diff --git a/src/s2/s2polyline.h b/src/s2/s2polyline.h
+index 19cbbdd..08bb84d 100644
+--- a/src/s2/s2polyline.h
++++ b/src/s2/s2polyline.h
+@@ -29,8 +29,8 @@
+ #include "s2/s2latlng_rect.h"
+ #include "s2/s2region.h"
+ #include "s2/s2shape.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/base/macros.h"
++#include "absl/memory/memory.h"
+ 
+ class Decoder;
+ class Encoder;
+diff --git a/src/s2/s2polyline_alignment.cc b/src/s2/s2polyline_alignment.cc
+index 261a201..264e722 100644
+--- a/src/s2/s2polyline_alignment.cc
++++ b/src/s2/s2polyline_alignment.cc
+@@ -25,7 +25,7 @@
+ #include <vector>
+ 
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/util/math/mathutil.h"
+ 
+ namespace s2polyline_alignment {
+diff --git a/src/s2/s2polyline_alignment_test.cc b/src/s2/s2polyline_alignment_test.cc
+index 6f55dc7..3dadbdc 100644
+--- a/src/s2/s2polyline_alignment_test.cc
++++ b/src/s2/s2polyline_alignment_test.cc
+@@ -21,8 +21,8 @@
+ #include <gtest/gtest.h>
+ 
+ #include "s2/base/stringprintf.h"
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_cat.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2loop.h"
+ #include "s2/s2testing.h"
+diff --git a/src/s2/s2polyline_test.cc b/src/s2/s2polyline_test.cc
+index 40230fa..01952c0 100644
+--- a/src/s2/s2polyline_test.cc
++++ b/src/s2/s2polyline_test.cc
+@@ -32,8 +32,8 @@
+ #include "s2/s2pointutil.h"
+ #include "s2/s2testing.h"
+ #include "s2/s2text_format.h"
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_cat.h"
+ #include "s2/util/coding/coder.h"
+ 
+ using absl::StrCat;
+diff --git a/src/s2/s2predicates_internal.h b/src/s2/s2predicates_internal.h
+index ecdc0ab..5e19369 100644
+--- a/src/s2/s2predicates_internal.h
++++ b/src/s2/s2predicates_internal.h
+@@ -23,7 +23,7 @@
+ 
+ #include <limits>
+ 
+-#include "s2/third_party/absl/base/casts.h"
++#include "absl/base/casts.h"
+ #include "s2/s1chord_angle.h"
+ #include "s2/s2predicates.h"
+ #include "s2/util/math/exactfloat/exactfloat.h"
+diff --git a/src/s2/s2predicates_test.cc b/src/s2/s2predicates_test.cc
+index 2aa4816..30fedab 100644
+--- a/src/s2/s2predicates_test.cc
++++ b/src/s2/s2predicates_test.cc
+@@ -24,7 +24,7 @@
+ #include "s2/base/commandlineflags.h"
+ #include "s2/base/stringprintf.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/base/casts.h"
++#include "absl/base/casts.h"
+ #include "s2/s1angle.h"
+ #include "s2/s1chord_angle.h"
+ #include "s2/s2edge_distances.h"
+diff --git a/src/s2/s2r2rect_test.cc b/src/s2/s2r2rect_test.cc
+index d095258..9acadb8 100644
+--- a/src/s2/s2r2rect_test.cc
++++ b/src/s2/s2r2rect_test.cc
+@@ -32,7 +32,7 @@
+ #include "s2/s2latlng_rect.h"
+ #include "s2/s2pointutil.h"
+ #include "s2/s2testing.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/strings/str_cat.h"
+ 
+ using absl::StrCat;
+ 
+diff --git a/src/s2/s2region_coverer.cc b/src/s2/s2region_coverer.cc
+index 5ea3101..96accda 100644
+--- a/src/s2/s2region_coverer.cc
++++ b/src/s2/s2region_coverer.cc
+@@ -32,7 +32,7 @@
+ #include "s2/s2cell_union.h"
+ #include "s2/s2metrics.h"
+ #include "s2/s2region.h"
+-#include "s2/third_party/absl/base/casts.h"
++#include "absl/base/casts.h"
+ 
+ using std::is_sorted;
+ using std::max;
+diff --git a/src/s2/s2region_coverer.h b/src/s2/s2region_coverer.h
+index b6c8511..10b9b5b 100644
+--- a/src/s2/s2region_coverer.h
++++ b/src/s2/s2region_coverer.h
+@@ -22,7 +22,7 @@
+ #include <utility>
+ #include <vector>
+ 
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/s2cell.h"
+ #include "s2/s2cell_id.h"
+diff --git a/src/s2/s2region_coverer_test.cc b/src/s2/s2region_coverer_test.cc
+index dc69df5..92d8a83 100644
+--- a/src/s2/s2region_coverer_test.cc
++++ b/src/s2/s2region_coverer_test.cc
+@@ -41,8 +41,8 @@
+ #include "s2/s2latlng.h"
+ #include "s2/s2region.h"
+ #include "s2/s2testing.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
+-#include "s2/third_party/absl/strings/str_split.h"
++#include "absl/strings/str_cat.h"
++#include "absl/strings/str_split.h"
+ 
+ using absl::StrCat;
+ using std::max;
+diff --git a/src/s2/s2region_intersection.h b/src/s2/s2region_intersection.h
+index ebcc718..7aaf597 100644
+--- a/src/s2/s2region_intersection.h
++++ b/src/s2/s2region_intersection.h
+@@ -23,7 +23,7 @@
+ #include "s2/base/logging.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/s2region.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ 
+ class Decoder;
+ class Encoder;
+diff --git a/src/s2/s2region_term_indexer.cc b/src/s2/s2region_term_indexer.cc
+index 1feb5f4..a065f7c 100644
+--- a/src/s2/s2region_term_indexer.cc
++++ b/src/s2/s2region_term_indexer.cc
+@@ -81,7 +81,7 @@
+ #include "s2/s2cap.h"
+ #include "s2/s2cell_id.h"
+ #include "s2/s2region.h"
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/strings/str_cat.h"
+ 
+ using absl::string_view;
+ using std::vector;
+diff --git a/src/s2/s2region_term_indexer.h b/src/s2/s2region_term_indexer.h
+index 150d4d1..12f471a 100644
+--- a/src/s2/s2region_term_indexer.h
++++ b/src/s2/s2region_term_indexer.h
+@@ -103,7 +103,7 @@
+ #include "s2/s2cell_union.h"
+ #include "s2/s2region.h"
+ #include "s2/s2region_coverer.h"
+-#include "s2/third_party/absl/strings/string_view.h"
++#include "absl/strings/string_view.h"
+ 
+ class S2RegionTermIndexer {
+  public:
+diff --git a/src/s2/s2region_test.cc b/src/s2/s2region_test.cc
+index dcb9569..9d5cb79 100644
+--- a/src/s2/s2region_test.cc
++++ b/src/s2/s2region_test.cc
+@@ -17,8 +17,8 @@
+ #include "s2/s2region.h"
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/container/fixed_array.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/container/fixed_array.h"
++#include "absl/memory/memory.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2cell.h"
+ #include "s2/s2cell_id.h"
+diff --git a/src/s2/s2region_union.h b/src/s2/s2region_union.h
+index 2791cbc..1ff0cfe 100644
+--- a/src/s2/s2region_union.h
++++ b/src/s2/s2region_union.h
+@@ -24,7 +24,7 @@
+ #include "s2/base/logging.h"
+ #include "s2/_fp_contract_off.h"
+ #include "s2/s2region.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ 
+ class Decoder;
+ class Encoder;
+diff --git a/src/s2/s2region_union_test.cc b/src/s2/s2region_union_test.cc
+index dcb0fb0..4b0e4e1 100644
+--- a/src/s2/s2region_union_test.cc
++++ b/src/s2/s2region_union_test.cc
+@@ -21,7 +21,7 @@
+ #include <vector>
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2cell.h"
+ #include "s2/s2cell_id.h"
+diff --git a/src/s2/s2shape_index.h b/src/s2/s2shape_index.h
+index d455060..e44de6c 100644
+--- a/src/s2/s2shape_index.h
++++ b/src/s2/s2shape_index.h
+@@ -38,9 +38,9 @@
+ #include "s2/s2cell_id.h"
+ #include "s2/s2pointutil.h"
+ #include "s2/s2shape.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/base/thread_annotations.h"
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/base/macros.h"
++#include "absl/base/thread_annotations.h"
++#include "absl/memory/memory.h"
+ #include "s2/util/gtl/compact_array.h"
+ 
+ class R1Interval;
+diff --git a/src/s2/s2shape_index_buffered_region_test.cc b/src/s2/s2shape_index_buffered_region_test.cc
+index eb4b954..146b2cf 100644
+--- a/src/s2/s2shape_index_buffered_region_test.cc
++++ b/src/s2/s2shape_index_buffered_region_test.cc
+@@ -20,7 +20,7 @@
+ #include <iostream>
+ #include <memory>
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2cap.h"
+ #include "s2/s2cell_union.h"
+diff --git a/src/s2/s2shape_index_measures_test.cc b/src/s2/s2shape_index_measures_test.cc
+index 8a2dae6..dd088d6 100644
+--- a/src/s2/s2shape_index_measures_test.cc
++++ b/src/s2/s2shape_index_measures_test.cc
+@@ -22,7 +22,7 @@
+ #include "s2/s2shape_index_measures.h"
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2lax_polygon_shape.h"
+ #include "s2/s2lax_polyline_shape.h"
+diff --git a/src/s2/s2shapeutil_build_polygon_boundaries.cc b/src/s2/s2shapeutil_build_polygon_boundaries.cc
+index c8e3229..bdcc3fb 100644
+--- a/src/s2/s2shapeutil_build_polygon_boundaries.cc
++++ b/src/s2/s2shapeutil_build_polygon_boundaries.cc
+@@ -17,7 +17,7 @@
+ 
+ #include "s2/s2shapeutil_build_polygon_boundaries.h"
+ 
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2contains_point_query.h"
+ #include "s2/s2shape_index.h"
+diff --git a/src/s2/s2shapeutil_coding.cc b/src/s2/s2shapeutil_coding.cc
+index b8ab201..a675a46 100644
+--- a/src/s2/s2shapeutil_coding.cc
++++ b/src/s2/s2shapeutil_coding.cc
+@@ -19,7 +19,7 @@
+ 
+ #include <memory>
+ 
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/encoded_s2point_vector.h"
+ #include "s2/encoded_string_vector.h"
+ #include "s2/s2lax_polygon_shape.h"
+diff --git a/src/s2/s2shapeutil_edge_iterator.cc b/src/s2/s2shapeutil_edge_iterator.cc
+index fd788b1..fa56299 100644
+--- a/src/s2/s2shapeutil_edge_iterator.cc
++++ b/src/s2/s2shapeutil_edge_iterator.cc
+@@ -15,7 +15,7 @@
+ 
+ #include "s2/s2shapeutil_edge_iterator.h"
+ 
+-#include "s2/third_party/absl/strings/str_cat.h"
++#include "absl/strings/str_cat.h"
+ 
+ namespace s2shapeutil {
+ 
+diff --git a/src/s2/s2shapeutil_visit_crossing_edge_pairs_test.cc b/src/s2/s2shapeutil_visit_crossing_edge_pairs_test.cc
+index 158e448..6f09651 100644
+--- a/src/s2/s2shapeutil_visit_crossing_edge_pairs_test.cc
++++ b/src/s2/s2shapeutil_visit_crossing_edge_pairs_test.cc
+@@ -21,7 +21,7 @@
+ #include <vector>
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2edge_crossings.h"
+ #include "s2/s2edge_vector_shape.h"
+diff --git a/src/s2/s2testing.cc b/src/s2/s2testing.cc
+index b7d7996..7706769 100644
+--- a/src/s2/s2testing.cc
++++ b/src/s2/s2testing.cc
+@@ -43,8 +43,8 @@
+ #include "s2/s2region.h"
+ #include "s2/s2text_format.h"
+ #include "s2/strings/serialize.h"
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_split.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_split.h"
+ #include "s2/util/math/matrix3x3.h"
+ 
+ using absl::make_unique;
+diff --git a/src/s2/s2testing.h b/src/s2/s2testing.h
+index 09eaffb..bfadd84 100644
+--- a/src/s2/s2testing.h
++++ b/src/s2/s2testing.h
+@@ -31,7 +31,7 @@
+ #include "s2/s1angle.h"
+ #include "s2/s1chord_angle.h"
+ #include "s2/s2cell_id.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ #include "s2/util/math/matrix3x3.h"
+ 
+ class S1Angle;
+diff --git a/src/s2/s2text_format.cc b/src/s2/s2text_format.cc
+index 9b19ca4..26697d5 100644
+--- a/src/s2/s2text_format.cc
++++ b/src/s2/s2text_format.cc
+@@ -21,10 +21,10 @@
+ #include "s2/base/logging.h"
+ #include "s2/base/stringprintf.h"
+ #include "s2/strings/serialize.h"
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/strings/str_split.h"
+-#include "s2/third_party/absl/strings/string_view.h"
+-#include "s2/third_party/absl/strings/strip.h"
++#include "absl/memory/memory.h"
++#include "absl/strings/str_split.h"
++#include "absl/strings/string_view.h"
++#include "absl/strings/strip.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s2latlng.h"
+ #include "s2/s2lax_polygon_shape.h"
+diff --git a/src/s2/s2text_format.h b/src/s2/s2text_format.h
+index 94c8ad9..dd07d74 100644
+--- a/src/s2/s2text_format.h
++++ b/src/s2/s2text_format.h
+@@ -27,8 +27,8 @@
+ #include <string>
+ #include <vector>
+ 
+-#include "s2/third_party/absl/base/attributes.h"
+-#include "s2/third_party/absl/strings/string_view.h"
++#include "absl/base/attributes.h"
++#include "absl/strings/string_view.h"
+ #include "s2/s2cell_id.h"
+ #include "s2/s2cell_union.h"
+ #include "s2/s2debug.h"
+diff --git a/src/s2/s2text_format_test.cc b/src/s2/s2text_format_test.cc
+index 1110f17..ffe9e0e 100644
+--- a/src/s2/s2text_format_test.cc
++++ b/src/s2/s2text_format_test.cc
+@@ -17,7 +17,7 @@
+ 
+ #include <vector>
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/strings/str_split.h"
++#include "absl/strings/str_split.h"
+ #include "s2/mutable_s2shape_index.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2latlng.h"
+diff --git a/src/s2/sequence_lexicon_test.cc b/src/s2/sequence_lexicon_test.cc
+index 2753e1e..71fd8a4 100644
+--- a/src/s2/sequence_lexicon_test.cc
++++ b/src/s2/sequence_lexicon_test.cc
+@@ -23,7 +23,7 @@
+ 
+ #include "s2/base/logging.h"
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ 
+ using absl::make_unique;
+ 
+diff --git a/src/s2/strings/ostringstream.h b/src/s2/strings/ostringstream.h
+index 4af5d66..901bdde 100644
+--- a/src/s2/strings/ostringstream.h
++++ b/src/s2/strings/ostringstream.h
+@@ -22,7 +22,8 @@
+ #include <streambuf>
+ #include <string>
+ 
+-#include "s2/third_party/absl/base/port.h"
++#include "absl/base/port.h"
++#include "s2/base/port.h"
+ 
+ namespace strings {
+ 
+diff --git a/src/s2/strings/serialize.cc b/src/s2/strings/serialize.cc
+index d4a3fcf..3075aa7 100644
+--- a/src/s2/strings/serialize.cc
++++ b/src/s2/strings/serialize.cc
+@@ -18,8 +18,8 @@
+ #include <string>
+ #include <vector>
+ 
+-#include "s2/third_party/absl/strings/str_split.h"
+-#include "s2/third_party/absl/strings/string_view.h"
++#include "absl/strings/str_split.h"
++#include "absl/strings/string_view.h"
+ 
+ using absl::StrSplit;
+ using absl::string_view;
+diff --git a/src/s2/strings/serialize.h b/src/s2/strings/serialize.h
+index bc6c211..d3fe3da 100644
+--- a/src/s2/strings/serialize.h
++++ b/src/s2/strings/serialize.h
+@@ -19,7 +19,7 @@
+ #include <string>
+ #include <vector>
+ 
+-#include "s2/third_party/absl/strings/string_view.h"
++#include "absl/strings/string_view.h"
+ 
+ namespace strings {
+ 
+diff --git a/src/s2/util/bits/bits.cc b/src/s2/util/bits/bits.cc
+index 80755df..cc6da30 100644
+--- a/src/s2/util/bits/bits.cc
++++ b/src/s2/util/bits/bits.cc
+@@ -19,7 +19,7 @@
+ #include "s2/util/bits/bits.h"
+ 
+ #include <cassert>
+-#include "s2/third_party/absl/numeric/int128.h"
++#include "absl/numeric/int128.h"
+ 
+ using absl::uint128;
+ 
+diff --git a/src/s2/util/bits/bits.h b/src/s2/util/bits/bits.h
+index 6a9a2a4..b4be8c1 100644
+--- a/src/s2/util/bits/bits.h
++++ b/src/s2/util/bits/bits.h
+@@ -45,8 +45,8 @@
+ // Bits) containing a few bit patterns (which vary based on value of template
+ // parameter).
+ 
+-#include "s2/third_party/absl/base/casts.h"
+-#include "s2/third_party/absl/numeric/int128.h"
++#include "absl/base/casts.h"
++#include "absl/numeric/int128.h"
+ #if defined(__i386__) || defined(__x86_64__)
+ #include <x86intrin.h>
+ #endif
+@@ -56,7 +56,7 @@
+ #include "s2/base/integral_types.h"
+ #include "s2/base/logging.h"
+ #include "s2/base/port.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ 
+ class Bits {
+  public:
+diff --git a/src/s2/util/coding/coder.h b/src/s2/util/coding/coder.h
+index 9faf19b..b9d6a99 100644
+--- a/src/s2/util/coding/coder.h
++++ b/src/s2/util/coding/coder.h
+@@ -27,8 +27,8 @@
+ #include "s2/base/integral_types.h"
+ #include "s2/base/logging.h"
+ #include "s2/base/port.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/meta/type_traits.h"
++#include "absl/base/macros.h"
++#include "absl/meta/type_traits.h"
+ #include "s2/util/coding/varint.h"
+ #include "s2/util/endian/endian.h"
+ 
+diff --git a/src/s2/util/endian/endian.h b/src/s2/util/endian/endian.h
+index efc668c..f3508bc 100644
+--- a/src/s2/util/endian/endian.h
++++ b/src/s2/util/endian/endian.h
+@@ -29,9 +29,9 @@
+ 
+ #include "s2/base/integral_types.h"
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/base/casts.h"
+-#include "s2/third_party/absl/base/port.h"
+-#include "s2/third_party/absl/numeric/int128.h"
++#include "absl/base/casts.h"
++#include "absl/base/port.h"
++#include "absl/numeric/int128.h"
+ 
+ // Use compiler byte-swapping intrinsics if they are available.  32-bit
+ // and 64-bit versions are available in Clang and GCC as of GCC 4.3.0.
+diff --git a/src/s2/util/gtl/btree.h b/src/s2/util/gtl/btree.h
+index 427393a..69d888e 100644
+--- a/src/s2/util/gtl/btree.h
++++ b/src/s2/util/gtl/btree.h
+@@ -67,13 +67,13 @@
+ 
+ #include "s2/base/integral_types.h"
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/container/internal/compressed_tuple.h"
+-#include "s2/third_party/absl/container/internal/container_memory.h"
+-#include "s2/third_party/absl/memory/memory.h"
+-#include "s2/third_party/absl/meta/type_traits.h"
+-#include "s2/third_party/absl/strings/string_view.h"
+-#include "s2/third_party/absl/utility/utility.h"
++#include "absl/base/macros.h"
++#include "absl/container/internal/compressed_tuple.h"
++#include "absl/container/internal/container_memory.h"
++#include "absl/memory/memory.h"
++#include "absl/meta/type_traits.h"
++#include "absl/strings/string_view.h"
++#include "absl/utility/utility.h"
+ #include "s2/util/gtl/layout.h"
+ 
+ namespace gtl {
+@@ -319,7 +319,7 @@ struct set_params
+   using mapped_type = void;
+   using value_type = Key;
+   using mutable_value_type = Key;
+-  // This type implements the necessary functions from the subtle::slot_type
++  // This type implements the necessary functions from the absl::container_internal::slot_type
+   // interface.
+   struct slot_type {
+     value_type value;
+@@ -583,9 +583,9 @@ class btree_node {
+   // Getters/setter for the child at position i in the node.
+   btree_node *child(int i) const { return GetField<4>()[i]; }
+   btree_node *&mutable_child(int i) { return GetField<4>()[i]; }
+-  void clear_child(int i) { subtle::SanitizerPoisonObject(&mutable_child(i)); }
++  void clear_child(int i) { absl::container_internal::SanitizerPoisonObject(&mutable_child(i)); }
+   void set_child(int i, btree_node *c) {
+-    subtle::SanitizerUnpoisonObject(&mutable_child(i));
++    absl::container_internal::SanitizerUnpoisonObject(&mutable_child(i));
+     mutable_child(i) = c;
+     c->set_position(i);
+   }
+@@ -741,14 +741,14 @@ class btree_node {
+     n->set_max_count(max_count);
+     n->set_count(0);
+     n->set_type(NodeType::kLeaf);
+-    subtle::SanitizerPoisonMemoryRegion(n->slot(0),
++    absl::container_internal::SanitizerPoisonMemoryRegion(n->slot(0),
+                                         max_count * sizeof(slot_type));
+     return n;
+   }
+   static btree_node *init_internal(btree_node *n, btree_node *parent) {
+     init_leaf(n, parent, kNodeValues);
+     n->set_type(NodeType::kInternal);
+-    subtle::SanitizerPoisonMemoryRegion(
++    absl::container_internal::SanitizerPoisonMemoryRegion(
+         &n->mutable_child(0), (kNodeValues + 1) * sizeof(btree_node *));
+     return n;
+   }
+@@ -767,12 +767,12 @@ class btree_node {
+  private:
+   template <typename... Args>
+   void value_init(const size_type i, allocator_type *alloc, Args &&... args) {
+-    subtle::SanitizerUnpoisonObject(slot(i));
++    absl::container_internal::SanitizerUnpoisonObject(slot(i));
+     slot_type::construct(alloc, slot(i), std::forward<Args>(args)...);
+   }
+   void value_destroy(const size_type i, allocator_type *alloc) {
+     slot_type::destroy(alloc, slot(i));
+-    subtle::SanitizerPoisonObject(slot(i));
++    absl::container_internal::SanitizerPoisonObject(slot(i));
+   }
+ 
+   // Move n values starting at value i in this node into the values starting at
+@@ -780,7 +780,7 @@ class btree_node {
+   void uninitialized_move_n(const size_type n, const size_type i,
+                             const size_type j, btree_node *x,
+                             allocator_type *alloc) {
+-    subtle::SanitizerUnpoisonMemoryRegion(x->slot(j), n * sizeof(slot_type));
++    absl::container_internal::SanitizerUnpoisonMemoryRegion(x->slot(j), n * sizeof(slot_type));
+     for (slot_type *src = slot(i), *end = src + n, *dest = x->slot(j);
+          src != end; ++src, ++dest) {
+       slot_type::construct(alloc, dest, src);
+@@ -1298,7 +1298,7 @@ class btree {
+   // allocator.
+   node_type *allocate(const size_type size) {
+     return reinterpret_cast<node_type *>(
+-        subtle::Allocate<node_type::Alignment()>(mutable_allocator(), size));
++        absl::container_internal::Allocate<node_type::Alignment()>(mutable_allocator(), size));
+   }
+ 
+   // Node creation/deletion routines.
+@@ -1317,7 +1317,7 @@ class btree {
+ 
+   // Deallocates a node of a certain size in bytes using the allocator.
+   void deallocate(const size_type size, node_type *node) {
+-    subtle::Deallocate<node_type::Alignment()>(mutable_allocator(), node, size);
++    absl::container_internal::Deallocate<node_type::Alignment()>(mutable_allocator(), node, size);
+   }
+ 
+   void delete_internal_node(node_type *node) {
+diff --git a/src/s2/util/gtl/btree_container.h b/src/s2/util/gtl/btree_container.h
+index ddb6426..7daa4e6 100644
+--- a/src/s2/util/gtl/btree_container.h
++++ b/src/s2/util/gtl/btree_container.h
+@@ -21,7 +21,7 @@
+ #include <initializer_list>
+ #include <utility>
+ 
+-#include "s2/third_party/absl/base/internal/throw_delegate.h"
++#include "absl/base/internal/throw_delegate.h"
+ #include "s2/util/gtl/btree.h"  // IWYU pragma: export
+ 
+ namespace gtl {
+diff --git a/src/s2/util/gtl/compact_array.h b/src/s2/util/gtl/compact_array.h
+index 880c420..1b05fb6 100644
+--- a/src/s2/util/gtl/compact_array.h
++++ b/src/s2/util/gtl/compact_array.h
+@@ -50,9 +50,9 @@
+ 
+ #include "s2/base/integral_types.h"
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ #include "s2/base/port.h"
+-#include "s2/third_party/absl/meta/type_traits.h"
++#include "absl/meta/type_traits.h"
+ #include "s2/util/bits/bits.h"
+ #include "s2/util/gtl/container_logging.h"
+ #include "s2/util/gtl/libc_allocator_with_realloc.h"
+diff --git a/src/s2/util/gtl/dense_hash_set.h b/src/s2/util/gtl/dense_hash_set.h
+index 6e4e50f..398d1f5 100644
+--- a/src/s2/util/gtl/dense_hash_set.h
++++ b/src/s2/util/gtl/dense_hash_set.h
+@@ -124,7 +124,7 @@
+ #include <vector>
+ 
+ #include "s2/base/port.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ #include "s2/util/gtl/densehashtable.h"  // IWYU pragma: export
+ #include "s2/util/gtl/libc_allocator_with_realloc.h"
+ 
+diff --git a/src/s2/util/gtl/layout.h b/src/s2/util/gtl/layout.h
+index 7bc2f4d..d53de5c 100644
+--- a/src/s2/util/gtl/layout.h
++++ b/src/s2/util/gtl/layout.h
+@@ -16,7 +16,7 @@
+ #ifndef S2_UTIL_GTL_LAYOUT_H_
+ #define S2_UTIL_GTL_LAYOUT_H_
+ 
+-#include "s2/third_party/absl/container/internal/layout.h"
++#include "absl/container/internal/layout.h"
+ 
+ namespace gtl {
+ 
+diff --git a/src/s2/util/gtl/legacy_random_shuffle.h b/src/s2/util/gtl/legacy_random_shuffle.h
+index 4effc5d..daa74fb 100644
+--- a/src/s2/util/gtl/legacy_random_shuffle.h
++++ b/src/s2/util/gtl/legacy_random_shuffle.h
+@@ -34,7 +34,7 @@
+ #include <cstdlib>
+ #include <iterator>
+ 
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ 
+ namespace gtl {
+ 
+diff --git a/src/s2/util/math/exactfloat/exactfloat.cc b/src/s2/util/math/exactfloat/exactfloat.cc
+index 0a2cfdd..d483149 100644
+--- a/src/s2/util/math/exactfloat/exactfloat.cc
++++ b/src/s2/util/math/exactfloat/exactfloat.cc
+@@ -29,8 +29,8 @@
+ 
+ #include "s2/base/integral_types.h"
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/container/fixed_array.h"
++#include "absl/base/macros.h"
++#include "absl/container/fixed_array.h"
+ 
+ using std::max;
+ using std::min;
+diff --git a/src/s2/util/math/vector.h b/src/s2/util/math/vector.h
+index 6da862f..d251175 100644
+--- a/src/s2/util/math/vector.h
++++ b/src/s2/util/math/vector.h
+@@ -30,8 +30,8 @@
+ 
+ #include "s2/base/integral_types.h"
+ #include "s2/base/logging.h"
+-#include "s2/third_party/absl/base/macros.h"
+-#include "s2/third_party/absl/utility/utility.h"
++#include "absl/base/macros.h"
++#include "absl/utility/utility.h"
+ 
+ template <typename T> class Vector2;
+ template <typename T> class Vector3;
+diff --git a/src/s2/util/units/physical-units.h b/src/s2/util/units/physical-units.h
+index 3b9ac8f..9d99ceb 100644
+--- a/src/s2/util/units/physical-units.h
++++ b/src/s2/util/units/physical-units.h
+@@ -91,7 +91,7 @@
+ #include <type_traits>
+ 
+ #include "s2/base/integral_types.h"
+-#include "s2/third_party/absl/base/macros.h"
++#include "absl/base/macros.h"
+ 
+ namespace util {
+ 
+diff --git a/src/s2/value_lexicon_test.cc b/src/s2/value_lexicon_test.cc
+index 1c67cbc..ff57ef2 100644
+--- a/src/s2/value_lexicon_test.cc
++++ b/src/s2/value_lexicon_test.cc
+@@ -20,7 +20,7 @@
+ #include <memory>
+ 
+ #include <gtest/gtest.h>
+-#include "s2/third_party/absl/memory/memory.h"
++#include "absl/memory/memory.h"
+ #include "s2/s1angle.h"
+ #include "s2/s2point.h"
+ 

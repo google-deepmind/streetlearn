@@ -1,0 +1,147 @@
+// Streetlearn protocol buffers BUILD file.
+//
+// Copyright 2018 Google LLC.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto2";
+
+package streetlearn;
+
+// Gps coordinates in degrees.
+message LatLng {
+  optional double lat = 1;
+  optional double lng = 2;
+}
+
+// A combination of panorama id and GPS coordinates.
+message PanoIdAndGpsCoords {
+  // Panorama id.
+  optional string id = 1;
+  // Geographic location of this pano
+  optional LatLng coords = 2;
+}
+
+// Describes a neighbor of a panorama.
+message PanoNeighbor {
+  // Panorama id.
+  optional string id = 1;
+  // Geographic location of this pano
+  optional LatLng coords = 2;
+  // Date of the panorama.
+  optional string pano_date = 3;
+  // Snapped geographic location of this pano
+  optional LatLng snapped_coords = 4;
+}
+
+// StreetLearn panorama
+message Pano {
+  enum SceneType {
+    // The default value is OUTDOOR to remain compatible.
+    OUTDOOR = 0;
+    INDOOR = 1;
+  }
+
+  // Panorama id.
+  optional string id = 1;
+
+  // Language of the address. In most of the cases it's english except when
+  // english translation is not available.
+  optional string address_language = 2;
+  // Name of the street.
+  optional string street_name = 3;
+  // Full street address.
+  optional string full_address = 4;
+
+  // Language of the description. In most of the cases it's english except when
+  // english translation is not available.
+  optional string description_language = 5 [deprecated = true];
+  // Panorama description.
+  optional string description = 6 [deprecated = true];
+
+  // The "region" and country name that this panorama is in. The definition of
+  // the region name is country dependent, but usually corresponds to a city
+  // name (or perhaps a larger area such as a county if no city name is
+  // appropriate). Both fields use local representations, i.e. the local
+  // language and character set.
+  optional string region = 7;
+  optional string country_code = 8;
+
+  // Geographic location of this pano
+  optional LatLng coords = 9;
+
+  // Elevation of the captured panorama measured in meters relative to WGS-84
+  // ellipsoid.
+  optional double alt = 10;
+
+  // Orientation of the panorama.
+  optional double roll_deg = 11;
+  optional double pitch_deg = 12;
+  optional double heading_deg = 13;
+
+  // Date of the panorama.
+  optional string pano_date = 14;
+
+  optional SceneType scene_type = 15;
+
+  // Jpeg compressed pixel data.
+  optional bytes compressed_image = 16;
+
+  // List of all neighbors.
+  repeated PanoNeighbor neighbor = 17;
+
+  // List of all temporal neighbors.
+  repeated PanoNeighbor temporal_neighbor = 18;
+
+  // Snapped geographic location of this pano
+  optional LatLng snapped_coords = 19;
+}
+
+// Contains connection info.
+message PanoConnection {
+  // Panorama id.
+  optional string id = 1;
+
+  // Size of the connected subgraph.
+  optional int32 subgraph_size = 2;
+
+  // List of immediate neighbor ids.
+  repeated string neighbor = 3;
+}
+
+// Contains temporal connection info.
+message PanoTemporalConnection {
+  // Panorama id.
+  optional string id = 1;
+
+  // List of immediate temporal neighbor ids.
+  repeated string neighbor = 3;
+}
+
+// Street learn area connectivity graph.
+message StreetLearnGraph {
+  // Geographic location of the minimum lat/lon bounding this dataset.
+  optional LatLng min_coords = 1;
+
+  // Geographic location of the maximum lat/lon bounding this dataset.
+  optional LatLng max_coords = 2;
+
+  // List of neighbors of each panorama.
+  repeated PanoConnection connection = 3;
+
+  // List of temporal neighbors of each panorama.
+  repeated PanoTemporalConnection temporal_connection = 4;
+
+  // List of all panos in the graph without image data.
+  repeated Pano pano = 5;
+}

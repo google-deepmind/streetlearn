@@ -1,0 +1,55 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Clif binding for the Streetlearn environment.
+from "third_party/absl/python/numpy/span.h" import *
+from "third_party/absl/python/optional.h" import *
+from "streetlearn/proto/streetlearn_pyclif.h" import *
+from "streetlearn/engine/python/metadata_cache.h" import *
+from "streetlearn/engine/python/color.h" import *
+
+use `std::map` as dict
+
+from "streetlearn/engine/streetlearn_engine.h":
+  namespace `streetlearn`:
+    class StreetLearnEngine:
+      @classmethod
+      def Create(cls, data_dir: str,
+        width: int = default, height: int = default,
+        graph_width: int = default, graph_height: int = default,
+        status_height: int = default, field_of_view: int = default,
+        min_graph_depth: int = default, max_graph_depth: int = default,
+        max_cache_size: int = default) -> StreetLearnEngine
+      def InitEpisode(self, episode_index: int, random_seed: int)
+      def InitGraphRenderer(self, observer_color: Color,
+        panos_to_highlight: dict<str, Color>) -> bool
+      def BuildRandomGraph(self) -> NoneOr<str>
+      def BuildGraphWithRoot(self, pano_id: str) -> NoneOr<str>
+      def BuildEntireGraph(self) -> NoneOr<str>
+      def MoveToNextPano(self) -> NoneOr<str>
+      def RotateObserver(self, yaw_deg: float, pitch_deg: float)
+      def RenderObservation(self, buffer: NumpyArray<uint8>)
+      def DrawGraph(self, pano_id_to_color: dict<str, Color>,
+        buffer: NumpyArray<uint8>) -> bool
+      def SetZoom(self, zoom: float) -> bool
+      def SetGraphDepth(self, min_depth: int, max_depth: int)
+      def SetPosition(self, pano_id: str) -> NoneOr<str>
+      def GetGraph(self) -> dict<str, list<str>>
+      def GetNeighborOccupancy(self, resolution: int) -> list<uint8>
+      def GetPano(self) -> Pano
+      def GetMetadata(self, pano_id: str) -> NoneOr<PanoMetadata>
+      def GetPanoDistance(self, pano_id1: str, pano_id2: str) -> NoneOr<float>
+      def GetPanoBearing(self, pano_id1: str, pano_id2: str) -> NoneOr<float>
+      def GetYaw(self) -> float
+      def GetPitch(self) -> float
