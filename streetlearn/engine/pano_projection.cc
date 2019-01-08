@@ -237,7 +237,7 @@ void PanoProjection::Impl::Project(const cv::Mat& input, double yaw_deg,
   ProjectXYZPointCloud(xyz, pano_width, pano_height, &map_lon, &map_lat);
 
   // Remap from input to output given the latitude and longitude maps.
-  cv::remap(input, *output, map_lon, map_lat, CV_INTER_CUBIC);
+  cv::remap(input, *output, map_lon, map_lat, CV_INTER_CUBIC, cv::BORDER_WRAP);
 }
 
 PanoProjection::PanoProjection(double fov_deg, int proj_width, int proj_height)

@@ -180,7 +180,7 @@ TEST_F(PanoGraphTest, PanoCalculationTest) {
   ASSERT_TRUE(pano_graph.Metadata(pano_ids[1], &metadata2));
   const auto& pano2 = metadata2.pano;
 
-  // TODO(b/117477463): elminitate all magic numbers
+  // TODO: elminitate all magic numbers
   EXPECT_THAT(pano_graph.GetPanoDistance(pano1.id(), pano2.id()),
               Optional(DoubleNear(131, 0.1)));
   EXPECT_THAT(pano_graph.GetPanoBearing(pano1.id(), pano2.id()),

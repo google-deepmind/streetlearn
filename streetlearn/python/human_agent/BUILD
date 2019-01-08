@@ -29,3 +29,13 @@ py_binary(
         "//streetlearn/python/environment:environment_py",
     ],
 )
+
+py_binary(
+    name = "oracle_agent",
+    srcs = ["oracle_agent.py"],
+    deps = [
+        "//streetlearn/engine/python:streetlearn_engine",
+        "//streetlearn/proto:streetlearn_py_pb2",
+        "//streetlearn/python/environment:environment_py",
+    ],
+)

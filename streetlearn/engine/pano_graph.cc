@@ -192,7 +192,7 @@ bool PanoGraph::MoveToNeighbor(double current_bearing, double tolerance) {
   double tolerance_rads = math::DegreesToRadians(tolerance);
 
   // Work out which neighbor is closest to the current bearing.
-  // TODO(user): reintroduce max_neighbor_depth.
+  // TODO: reintroduce max_neighbor_depth.
   auto neighbour_bearings = GetNeighborBearings(3 /* max_neighbor_depth */);
 
   std::string node_id;

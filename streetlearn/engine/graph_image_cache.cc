@@ -31,7 +31,7 @@ namespace {
 
 constexpr int kMinZoom = 1;
 constexpr int kMaxZoom = 32;
-constexpr int kNodeZoomCutoff = 8;
+constexpr int kNodeZoomCutoff = 1;
 constexpr int kNodeRadius = 2;
 constexpr double kLineWidth = 0.5;
 

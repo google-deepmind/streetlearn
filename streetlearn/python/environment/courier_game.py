@@ -55,8 +55,11 @@ class CourierGame(coin_game.CoinGame):
 
     self._num_steps_this_goal = 0
     self._min_distance_reached = np.finfo(np.float32).max
+    self._initial_distance_to_goal = np.finfo(np.float32).max
     self._current_goal_id = None
     self._visited_panos = set()
+    self._shortest_path = {}
+    self._timed_out = False
 
   def on_reset(self, streetlearn):
     """Gets called after StreetLearn:reset().
@@ -77,9 +80,6 @@ class CourierGame(coin_game.CoinGame):
     # Assign the goal location to one of the panos.
     self._pick_random_goal(streetlearn)
     self._num_steps_this_goal = 0
-    pano_id_to_color[self.goal_id] = self._colors['goal']
-    for pano_id in self._shortest_path:
-      pano_id_to_color[pano_id] = self._colors['shortest_path']
     return pano_id_to_color
 
   @property
@@ -99,6 +99,7 @@ class CourierGame(coin_game.CoinGame):
     if self._num_steps_this_goal > self._goal_timeout:
       logging.info('%d Courier target TIMEOUT (%d steps)',
                    streetlearn.frame_count, self._num_steps_this_goal)
+      #self._timed_out = True
       self._num_steps_this_goal = 0
       self._pick_random_goal(streetlearn)
 
@@ -115,36 +116,57 @@ class CourierGame(coin_game.CoinGame):
     if streetlearn.current_pano_id in self._coin_pano_id_set:
       reward += self._reward_per_coin
       self._coin_pano_id_set.remove(streetlearn.current_pano_id)
-      logging.info('Num. remaining coins: %d', len(self._coin_pano_id_set))
 
     self._num_steps_this_goal += 1
     return reward
 
+  def get_info(self, streetlearn):
+    """"Returns current information about the state of the environment.
+
+    Args:
+      streetlearn: a StreetLearn instance.
+    Returns:
+      info: information from the environment at the last step.
+    """
+    info = super(CourierGame, self).get_info(streetlearn)
+    info['num_steps_this_goal'] = self._num_steps_this_goal
+    info['current_goal_id'] = self._current_goal_id
+    info['min_distance_reached'] = self._min_distance_reached
+    info['initial_distance_to_goal'] = self._initial_distance_to_goal
+    info['reward_current_goal'] = self._reward_current_goal
+    next_pano_id = self._panos_to_goal[streetlearn.current_pano_id]
+    info['next_pano_id'] = next_pano_id
+    bearing_to_next_pano = streetlearn.engine.GetPanoBearing(
+        streetlearn.current_pano_id, next_pano_id) - streetlearn.engine.GetYaw()
+    info['bearing_to_next_pano'] = (bearing_to_next_pano + 180) % 360 - 180
+    return info
+
   def done(self):
     """Returns a flag indicating the end of the current episode.
 
-    This game does not end when all the coins are collected.
+    This game ends only at the end of the episode or if the goal times out.
+    During a single episode, every time a goal is found, a new one is chosen,
+    until the time runs out.
     """
-    if self._found_goal:
-      self._found_goal = False
+    if self._timed_out:
+      self._timed_out = False
       return True
     else:
       return False
 
-  def get_draw_graph_params(self, streetlearn):
-    """Returns the color of the home node."""
-    result = super(CourierGame, self).get_draw_graph_params(streetlearn)
-    result['pano_id_to_color'][str(self._current_goal_id)] = self._goal_color
-    return result
-
   def _sample_random_goal(self, streetlearn):
-    """Randomly sets a new pano for the current goal."""
+    """Randomly sets a new pano for the current goal.
+
+    Args:
+      streetlearn: The StreetLearn environment.
+    """
     goals = [goal for goal in streetlearn.graph
              if ((goal != self._current_goal_id) and
                  (goal != streetlearn.current_pano_id))]
     self._current_goal_id = np.random.choice(goals)
     self._min_distance_reached = streetlearn.engine.GetPanoDistance(
         streetlearn.current_pano_id, self._current_goal_id)
+    self._initial_distance_to_goal = self._min_distance_reached
 
   def _pick_random_goal(self, streetlearn):
     """Randomly sets a new pano for the current goal.
@@ -166,11 +188,12 @@ class CourierGame(coin_game.CoinGame):
     logging.info('%d Reward for the current goal depends on #panos to goal: %d',
                  streetlearn.frame_count, self._reward_current_goal)
     # Decorate the graph.
-    pano_id = streetlearn.current_pano_id
-    self._shortest_path = [pano_id]
-    while pano_id in shortest_path:
-      pano_id = shortest_path[pano_id]
-      self._shortest_path.append(pano_id)
+    self._pano_id_to_color = {coin_pano_id: self._colors['coin']
+                              for coin_pano_id in self._coin_pano_id_set}
+    self._update_pano_id_to_color()
+    for pano_id in shortest_path.iterkeys():
+      self._pano_id_to_color[pano_id] = self._colors['shortest_path']
+    self._pano_id_to_color[self.goal_id] = self._colors['goal']
 
   def _compute_reward(self, streetlearn):
     """Reward is a piecewise linear function of distance to the goal.
@@ -196,7 +219,6 @@ class CourierGame(coin_game.CoinGame):
     if distance_to_goal < self._min_radius_meters:
       # Have we reached the goal?
       reward = self._reward_current_goal
-      self._found_goal = True
       logging.info('%d Reached goal, distance_to_goal=%s, reward=%s',
                    streetlearn.frame_count, distance_to_goal, reward)
     else:

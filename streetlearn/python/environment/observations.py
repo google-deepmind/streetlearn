@@ -95,9 +95,8 @@ class GraphImage(Observation):
 
   @property
   def observation(self):
-    # TODO(user): Could pass dictionary of highlighted panos.
-    params = {}
-    self._streetlearn.engine.DrawGraph(params, self._buffer)
+    highlighted_panos = self._streetlearn.game.highlighted_panos()
+    self._streetlearn.engine.DrawGraph(highlighted_panos, self._buffer)
     return self._buffer
 
 

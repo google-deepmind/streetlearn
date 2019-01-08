@@ -25,6 +25,7 @@ py_library(
     srcs = [
         "coin_game.py",
         "courier_game.py",
+        "curriculum_courier_game.py",
         "default_config.py",
         "exploration_game.py",
         "game.py",

@@ -18,7 +18,7 @@ filegroup(
     name = "licenses",
     data = [
         "//:LICENSE",
-        # TODO(user): add all licenses
+        # TODO: add all licenses
     ],
 )
 

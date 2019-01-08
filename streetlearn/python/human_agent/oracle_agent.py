@@ -20,6 +20,7 @@ from __future__ import print_function
 
 from absl import app
 from absl import flags
+from absl import logging
 
 import time
 import numpy as np
@@ -32,18 +33,18 @@ from streetlearn.python.environment import streetlearn
 FLAGS = flags.FLAGS
 flags.DEFINE_integer("width", 400, "Observation and map width.")
 flags.DEFINE_integer("height", 400, "Observation and map height.")
-flags.DEFINE_float("horizontal_rot", 10, "Horizontal rotation step (deg).")
-flags.DEFINE_float("vertical_rot", 10, "Vertical rotation step (deg).")
+flags.DEFINE_float("horizontal_rot", 22.5, "Horizontal rotation step (deg).")
 flags.DEFINE_string("dataset_path", None, "Dataset path.")
 flags.DEFINE_string("start_pano", "",
                      "Pano at root of partial graph (default: full graph).")
 flags.DEFINE_integer("graph_depth", 200, "Depth of the pano graph.")
 flags.DEFINE_integer("frame_cap", 1000, "Number of frames / episode.")
-flags.DEFINE_float("proportion_of_panos_with_coins", 0.5, "Proportion of coins.")
+flags.DEFINE_string("stats_path", None, "Statistics path.")
+flags.DEFINE_float("proportion_of_panos_with_coins", 0, "Proportion of coins.")
 flags.mark_flag_as_required("dataset_path")
 
 
-HEIGHT_LINE = 30
+TOL_BEARING = 30
 
 
 def interleave(array, w, h):
@@ -62,6 +63,12 @@ def interleave(array, w, h):
 
 def loop(env, screen):
   """Main loop of the human agent."""
+  action = np.array([0, 0, 0, 0])
+  action_spec = env.action_spec()
+  graph = env.graph
+  sum_rewards = 0
+  sum_rewards_at_goal = 0
+  previous_goal_id = None
   while True:
     pano_id = env.current_pano_id
     observation = env.observation()
@@ -71,48 +78,51 @@ def loop(env, screen):
                              FLAGS.width, FLAGS.height)
     screen_buffer = np.concatenate((view_image, graph_image), axis=1)
     pygame.surfarray.blit_array(screen, screen_buffer)
-
     pygame.display.update()
-    action_spec = env.action_spec()
-    action = np.array([0, 0, 0, 0])
 
     for event in pygame.event.get():
-      if event.type == pygame.QUIT:
+      if (event.type == pygame.QUIT or
+          (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE)):
         return
-      elif event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_ESCAPE:
-          print(pano_id + ": exit")
-          return
-        if event.key == pygame.K_SPACE:
-          action = action_spec["move_forward"]
-          print(pano_id + ": move")
-        elif event.key == pygame.K_p:
-          filename = time.strftime('human_agent_%Y%m%d_%H%M%S.bmp')
+      if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_p:
+          filename = time.strftime('oracle_agent_%Y%m%d_%H%M%S.bmp')
           pygame.image.save(screen, filename)
-        elif event.key == pygame.K_i:
-          action = action_spec["map_zoom"]
-          print(pano_id + ": zoom in")
-        elif event.key == pygame.K_o:
-          action = -1 * action_spec["map_zoom"]
-          print(pano_id + ": zoom out")
-        elif event.key == pygame.K_a:
-          action = -FLAGS.horizontal_rot * action_spec["horizontal_rotation"]
-          print(pano_id + ": rotate left")
-        elif event.key == pygame.K_d:
-          action = FLAGS.horizontal_rot * action_spec["horizontal_rotation"]
-          print(pano_id + ": rotate right")
-        elif event.key == pygame.K_w:
-          action = -FLAGS.vertical_rot * action_spec["vertical_rotation"]
-          print(pano_id + ": look up")
-        elif event.key == pygame.K_s:
-          action = FLAGS.vertical_rot * action_spec["vertical_rotation"]
-          print(pano_id + ": look down")
-      elif event.type == pygame.KEYUP:
-        pass
-    _, reward, _, _ = env.step(action)
-    if reward > 0:
-      pano_id = env.current_pano_id
-      print("Collected reward of {} at {}".format(reward, pano_id))
+
+    # Take a step given the previous action and record the reward.
+    _, reward, done, info = env.step(action)
+    sum_rewards += reward
+    if (reward > 0) and (info['current_goal_id'] is not previous_goal_id):
+      sum_rewards_at_goal += reward
+    previous_goal_id = info['current_goal_id']
+    if done:
+      print("Episode reward: {}".format(sum_rewards))
+      if FLAGS.stats_path:
+        with open(FLAGS.stats_path, 'a') as f:
+          f.write(str(sum_rewards) + '\t' + str(sum_rewards_at_goal) + '\n')
+      sum_rewards = 0
+      sum_rewards_at_goal = 0
+
+    # Determine the next pano and bearing to that pano.
+    current_pano_id = info['current_pano_id']
+    next_pano_id = info['next_pano_id']
+    bearing = info['bearing_to_next_pano']
+    logging.info('Current pano: %s, next pano %s at %f',
+                 current_pano_id, next_pano_id, bearing)
+
+    # Bearing-based navigation.
+    if bearing > TOL_BEARING:
+      if bearing > TOL_BEARING + 2 * FLAGS.horizontal_rot:
+        action = 3 * FLAGS.horizontal_rot * action_spec["horizontal_rotation"]
+      else:
+        action = FLAGS.horizontal_rot * action_spec["horizontal_rotation"]
+    elif bearing < -TOL_BEARING:
+      if bearing < -TOL_BEARING - 2 * FLAGS.horizontal_rot:
+        action = -3 * FLAGS.horizontal_rot * action_spec["horizontal_rotation"]
+      else:
+        action = -FLAGS.horizontal_rot * action_spec["horizontal_rotation"]
+    else:
+      action = action_spec["move_forward"]
 
 def main(argv):
   config = {'width': FLAGS.width,
@@ -128,8 +138,8 @@ def main(argv):
             'max_graph_depth': FLAGS.graph_depth,
             'proportion_of_panos_with_coins':
                 FLAGS.proportion_of_panos_with_coins,
-            'observations': ['view_image', 'graph_image', 'yaw', 'pitch',
-                             'latlng', 'target_latlng']}
+            'action_spec': 'streetlearn_fast_rotate',
+            'observations': ['view_image', 'graph_image', 'yaw', 'pitch']}
   config = default_config.ApplyDefaults(config)
   game = courier_game.CourierGame(config)
   env = streetlearn.StreetLearn(FLAGS.dataset_path, config, game)

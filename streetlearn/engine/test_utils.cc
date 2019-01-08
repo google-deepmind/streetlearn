@@ -31,7 +31,7 @@
 #include "streetlearn/engine/pano_graph_node.h"
 
 #ifndef STREETLEARN_SUPPRESS_COMMANDLINE_FLAGS
-#include "base/commandlineflags.h"
+
 #include "absl/flags/flag.h"
 DECLARE_string(test_srcdir);
 #endif
@@ -41,7 +41,7 @@ namespace test_utils {
 
 std::string TestSrcDir() {
 #ifndef STREETLEARN_SUPPRESS_COMMANDLINE_FLAGS
-  return absl::GetFlag(FLAGS_test_srcdir) + "/google3/third_party/streetlearn/";
+  return absl::GetFlag(FLAGS_test_srcdir) + "/streetlearn";
 #else
   const char* const test_srcdir = std::getenv("TEST_SRCDIR");
   if (test_srcdir) {

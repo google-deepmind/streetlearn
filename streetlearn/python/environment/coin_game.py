@@ -54,11 +54,15 @@ class CoinGame(game.Game):
     # List of panos (will be populated using the streetlearn object).
     self._pano_ids = None
 
+    # Association between pano id and color.
+    self._pano_id_to_color = {}
+
     # Panos that (can) contain coins.
     self._proportion_of_panos_with_coins = config[
         'proportion_of_panos_with_coins']
     self._touched_pano_id_set = set()
     self._coin_pano_id_set = []
+    self._num_coins = 0
     logging.info('Proportion of panos with coins: %f',
                  self._proportion_of_panos_with_coins)
     logging.info('Reward per coin: %f', self._reward_per_coin)
@@ -70,6 +74,7 @@ class CoinGame(game.Game):
       streetlearn: A streetlearn instance.
     """
     self._touched_pano_id_set.add(streetlearn.current_pano_id)
+    self._update_pano_id_to_color()
 
   def on_reset(self, streetlearn):
     """Gets called after StreetLearn:reset().
@@ -87,14 +92,15 @@ class CoinGame(game.Game):
       self._pano_ids = sorted(streetlearn.graph)
 
     self._touched_pano_id_set.clear()
-    num_coins = int(self._proportion_of_panos_with_coins * len(self._pano_ids))
-    print("Sampling {} coins through the environment".format(num_coins))
+    self._num_coins = int(
+        self._proportion_of_panos_with_coins * len(self._pano_ids))
+    print("Sampling {} coins through the environment".format(self._num_coins))
     self._coin_pano_id_set = np.random.choice(
-        self._pano_ids, num_coins, replace=False).tolist()
-    pano_id_to_color = {coin_pano_id: self._colors['coin']
-                        for coin_pano_id in self._coin_pano_id_set}
+        self._pano_ids, self._num_coins, replace=False).tolist()
+    self._pano_id_to_color = {coin_pano_id: self._colors['coin']
+                              for coin_pano_id in self._coin_pano_id_set}
 
-    return pano_id_to_color
+    return self._pano_id_to_color
 
   def get_reward(self, streetlearn):
     """Returns the reward from the last step.
@@ -114,9 +120,33 @@ class CoinGame(game.Game):
       reward = 0
     return reward
 
+  def get_info(self, streetlearn):
+    """"Returns current information about the state of the environment.
+
+    Args:
+      streetlearn: a StreetLearn instance.
+    Returns:
+      info: information from the environment at the last step.
+    """
+    info = {}
+    info['num_coins_left'] = len(self._coin_pano_id_set)
+    info['num_coins'] = self._num_coins
+    info['current_pano_id'] = streetlearn.current_pano_id
+    return info
+
   def done(self):
     """Returns a flag indicating the end of the current episode.
 
     This game does not end when all the coins are collected.
     """
     return False
+
+  def highlighted_panos(self):
+    """Returns the list of highlighted panos and their colors."""
+    return self._pano_id_to_color
+
+  def _update_pano_id_to_color(self):
+    """Update the pano id to color table."""
+    self._pano_id_to_color.update({touched_pano_id: self._colors['touched']
+                                   for touched_pano_id
+                                   in self._touched_pano_id_set})

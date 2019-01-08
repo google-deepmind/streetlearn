@@ -121,6 +121,7 @@ class StreetLearn(object):
     self._color_for_observer = self._config["color_for_observer"]
     self._action_spec = self._config["action_spec"]
     self._rotation_speed = self._config["rotation_speed"]
+    self._auto_reset = self._config["auto_reset"]
     self._action_set = get_action_set(self._action_spec, self._rotation_speed)
     logging.info('Action set:')
     logging.info(self._action_set)
@@ -153,6 +154,9 @@ class StreetLearn(object):
       except ValueError as e:
         logging.warning(str(e))
 
+    self._reward = 0
+    self._done = False
+    self._info = {}
 
   @property
   def config(self):
@@ -257,6 +261,11 @@ class StreetLearn(object):
 
     Args:
       action: a 1d array containing a combination of actions.
+    Returns:
+      observation: tuple with observations for the last time step.
+      reward: scalar reward at the last time step.
+      done: boolean indicating the end of an episode.
+      info: dictionary with additional debug information.
     """
     self._frame_count += 1
     if type(action) != np.ndarray:
@@ -280,14 +289,48 @@ class StreetLearn(object):
     self._engine.SetZoom(self._zoom)
     self._game.on_step(self)
 
+    # Update the reward and done flag. Because we do not know the code logic
+    # inside each game, it is safer to obtain these immediately after step(),
+    # and store them for subsequent calls to reward(), done() and info().
+    self._reward = self._game.get_reward(self)
+    self._done = (self._frame_count > self._frame_cap) or self._game.done()
+    self._info = self._game.get_info(self)
+    if self._auto_reset and self._done:
+      self.reset()
+
+    # Return
+    return self.observation(), self.reward(), self.done(), self.info()
+
   def observation(self):
     """Returns the observations for the last time step."""
     return {item.name: item.observation for item in self._observations}
 
   def reward(self):
     """Returns the reward for the last time step."""
-    return self._game.get_reward(self)
+    return self._reward
 
   def done(self):
     """Return a flag indicating the end of the current episode."""
-    return (self._frame_count > self._frame_cap) or self._game.done()
+    return self._done
+
+  def info(self):
+    """Return a dictionary with environment information at the current step."""
+    return self._info
+
+  def get_metadata(self, pano_id):
+    """Return the metadata corresponding to the selected pano.
+
+    Args:
+      pano_id: a string containing the ID of a pano.
+    Returns:
+      metadata: a protocol buffer with the pano metadata.
+    """
+    if hasattr(self, '_graph') and pano_id in self.graph:
+      return self._engine.GetMetadata(pano_id)
+    else:
+      return None
+
+  def render(self):
+    """Empty function, for compatibility with OpenAI Gym."""
+    pass
+

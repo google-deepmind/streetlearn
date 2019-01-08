@@ -78,7 +78,7 @@ StreetLearnEngine::StreetLearnEngine(std::unique_ptr<Dataset> dataset,
                   max_graph_depth, dataset_.get()),
       pano_renderer_(pano_size.x(), pano_size.y(), status_height,
                      field_of_view) {
-  // TODO(b/117756079): Init return value unused.
+  // TODO: Init return value unused.
   pano_graph_.Init();
 }
 

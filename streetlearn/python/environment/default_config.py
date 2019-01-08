@@ -22,6 +22,7 @@ import copy
 from streetlearn.engine.python import color
 from streetlearn.python.environment import coin_game
 from streetlearn.python.environment import courier_game
+from streetlearn.python.environment import curriculum_courier_game
 from streetlearn.python.environment import exploration_game
 
 
@@ -45,6 +46,12 @@ DEFAULT_CONFIG = {
     'max_radius_meters': 200.0,
     'goal_timeout': 1000,
     'frame_cap': 1000,
+    'timestamp_start_curriculum': 0.0,
+    'annealing_rate_curriculum': 2.0,
+    'hours_curriculum_part_1': 0.0,
+    'hours_curriculum_part_2': 24.0,
+    'min_goal_distance_curriculum': 500.0,
+    'max_goal_distance_curriculum': 3500.0,
     'full_graph': True,
     'sample_graph_depth': True,
     'start_pano': '',
@@ -61,6 +68,7 @@ DEFAULT_CONFIG = {
     'level_name': 'coin_game',
     'action_spec': 'streetlearn_fast_rotate',
     'rotation_speed': 22.5,
+    'auto_reset': True,
 }
 
 NAME_TO_LEVEL = {
