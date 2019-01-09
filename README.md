@@ -2,9 +2,10 @@
 
 ## Overview
 
-This repository contains an implementation of the **StreetLearn** environment
-for training navigation agents as well as code for implementing the agents used
-in the NeurIPS 2018 paper on
+This repository contains an implementation of the
+[**StreetLearn**](http://streetlearn.cc) environment for training navigation
+agents as well as code for implementing the agents used in the NeurIPS 2018
+paper on
 ["Learning to Navigate in Cities Without a Map"](http://papers.nips.cc/paper/7509-learning-to-navigate-in-cities-without-a-map).
 The StreetLearn environment relies on panorama images from
 [Google Street View](https://maps.google.com) and provides an interface for
@@ -14,7 +15,13 @@ officially supported Google product.
 For a detailed description of the architecture please read our paper. Please
 cite the paper if you use the code from this repository in your work.
 
-Our paper also provides a detailed description of how to train and implement navigation agents in the StreetLearn environment by using a TensorFlow implementation of "Importance Weighted Actor-Learner Architectures", published in Espeholt, Soyer, Munos et al. (2018) "IMPALA: Scalable Distributed Deep-RL with Importance Weighted Actor-Learner Architectures"(https://arxiv.org/abs/1802.01561). The generic agent and trainer code have been published by Lasse Espeholt under an Apache license at:
+Our paper also provides a detailed description of how to train and implement
+navigation agents in the StreetLearn environment by using a TensorFlow
+implementation of "Importance Weighted Actor-Learner Architectures", published
+in Espeholt, Soyer, Munos et al. (2018) "IMPALA: Scalable Distributed Deep-RL
+with Importance Weighted Actor-Learner
+Architectures"(https://arxiv.org/abs/1802.01561). The generic agent and trainer
+code have been published by Lasse Espeholt under an Apache license at:
 [https://github.com/deepmind/scalable_agent](https://github.com/deepmind/scalable_agent).
 
 ### Bibtex
@@ -32,10 +39,23 @@ Our paper also provides a detailed description of how to train and implement nav
 
 This environment code contains:
 
-* **streetlearn/engine** Our C++ StreetLearn engine for loading, caching and serving Google Street View panoramas by projecting them from a equirectangular representation to first-person projected view at a given yaw, pitch and field of view, and for handling navigation (moving from one panorama to another) depending on the city street graph and the current orientation.
-* **streetlearn/proto** The message [protocol buffer](https://developers.google.com/protocol-buffers/) used to store panoramas and street graph.
-* **streetlearn/python/environment** A Python-based interface for calling the StreetLearn environment with custom action spaces.
-* **streetlearn/python/human_agent** A simple human agent, implemented in Python using pygame, that instantiates the StreetLearn environment on the requested map and enables a user to play the courier game. The directory also contains an oracle agent, similar to the human agent, which automatically navigates towards the goal and reports oracle performance on the courier game.
+*   **streetlearn/engine** Our C++ StreetLearn engine for loading, caching and
+    serving Google Street View panoramas by projecting them from a
+    equirectangular representation to first-person projected view at a given
+    yaw, pitch and field of view, and for handling navigation (moving from one
+    panorama to another) depending on the city street graph and the current
+    orientation.
+*   **streetlearn/proto** The message
+    [protocol buffer](https://developers.google.com/protocol-buffers/) used to
+    store panoramas and street graph.
+*   **streetlearn/python/environment** A Python-based interface for calling the
+    StreetLearn environment with custom action spaces.
+*   **streetlearn/python/human_agent** A simple human agent, implemented in
+    Python using pygame, that instantiates the StreetLearn environment on the
+    requested map and enables a user to play the courier game. The directory
+    also contains an oracle agent, similar to the human agent, which
+    automatically navigates towards the goal and reports oracle performance on
+    the courier game.
 
 ## Compilation from source
 
@@ -124,7 +144,8 @@ export CLIF_PATH=$HOME/opt
 bazel build streetlearn:streetlearn_engine_py
 ```
 
-To build the human agent in the StreetLearn environment, with all the dependencies:
+To build the human agent in the StreetLearn environment, with all the
+dependencies:
 
 ```shell
 export CLIF_PATH=$HOME/opt
@@ -133,7 +154,8 @@ bazel build streetlearn/python/human_agent
 
 ## Running the StreetLearn human agent
 
-To run the human agent using one of the StreetLearn datasets downloaded and stored at **dataset_path**:
+To run the human agent using one of the StreetLearn datasets downloaded and
+stored at **dataset_path**:
 
 ```shell
 bazel run streetlearn/python/human_agent -- --dataset_path=<dataset path>
@@ -145,46 +167,64 @@ For help with the options of the human_agent:
 bazel run streetlearn/python/human_agent --help
 ```
 
-The human agent shows a **view_image** (on top) and a **graph_image** (on bottom).
+The human agent shows a **view_image** (on top) and a **graph_image** (on
+bottom).
 
 ### Actions available to an agent:
 
-* Rotate left or right in the panorama, by a specified angle (change the yaw of the agent). In the human_agent, press **a** or **d**.
-* Rotate up or down in the panorama, by a specified angle (change the pitch of the agent). In the human_agent, press **w** or **s**.
-* Move from current panorama A forward to another panorama B if the current bearing of the agent from A to B is within a tolerance angle of 30 degrees. In the human_agent, press **space**.
-* Zoom in and out in the panorama. In the human_agent, press **i** or **o**.
+*   Rotate left or right in the panorama, by a specified angle (change the yaw
+    of the agent). In the human_agent, press **a** or **d**.
+*   Rotate up or down in the panorama, by a specified angle (change the pitch of
+    the agent). In the human_agent, press **w** or **s**.
+*   Move from current panorama A forward to another panorama B if the current
+    bearing of the agent from A to B is within a tolerance angle of 30 degrees.
+    In the human_agent, press **space**.
+*   Zoom in and out in the panorama. In the human_agent, press **i** or **o**.
 
-Additional keys for the human_agent are **escape** and **p** (to print the current view as a bitmap image).
+Additional keys for the human_agent are **escape** and **p** (to print the
+current view as a bitmap image).
 
-For training RL agents, action spaces are discretized using integers. For instance, in our paper, we used 5 actions: (move forward, turn left by 22.5 deg, turn left by 67.5 deg, turn right by 22.5 deg, turn right by 67.5 deg).
+For training RL agents, action spaces are discretized using integers. For
+instance, in our paper, we used 5 actions: (move forward, turn left by 22.5 deg,
+turn left by 67.5 deg, turn right by 22.5 deg, turn right by 67.5 deg).
 
 ### Navigation Bar
 
-Along the bottom of the **view_image** is the navigation bar which displays a small circle in any direction in which travel is possible:
+Along the bottom of the **view_image** is the navigation bar which displays a
+small circle in any direction in which travel is possible:
 
 *   When within the centre range, they will turn green meaning the user can move
     in this direction.
 *   When they are out of this range, they will turn red meaning this is
     inaccessible.
 *   When more than one dots are within the centre range, all except the most
-    central will turn orange, meaning that there are multiple (forward) directions available.
+    central will turn orange, meaning that there are multiple (forward)
+    directions available.
 
 ### Stop signs
 
-The graph is constructed by breadth first search to the depth specified by the graph depth flags. At the maximum depth the graph will suddenly stop, generally in the middle of a street. Because we are trying to train agents to recognize streets as navigable, and in order not to confuse the agents, red stop signs are shown from two panoramas away from any terminal node in the graph.
+The graph is constructed by breadth first search to the depth specified by the
+graph depth flags. At the maximum depth the graph will suddenly stop, generally
+in the middle of a street. Because we are trying to train agents to recognize
+streets as navigable, and in order not to confuse the agents, red stop signs are
+shown from two panoramas away from any terminal node in the graph.
 
 ### Obtaining the StreetLearn dataset
 
-You can request the StreetLearn dataset on the [StreetLearn project website](https://sites.google.com/view/streetlearn/).
+You can request the StreetLearn dataset on the
+[StreetLearn project website](https://sites.google.com/view/streetlearn/).
 
 ## Using the StreetLearn environment code
 
-The Python StreetLearn environment follows the specifications from [OpenAI Gym](https://gym.openai.com/docs/). The call to function **step(action)** returns:
-* **observation** (tuple of observations requested at construction),
-* **reward** (a float with the current reward of the agent),
-* **done** (boolean indicating whether the episode has ended)
-* and **info** (a dictionary of environment state variables).
-After creating the environment, it is initialised by calling function **reset()**. If the flag auto_reset is set to True at construction, **reset()** will be called automatically every time that an episode ends.
+The Python StreetLearn environment follows the specifications from
+[OpenAI Gym](https://gym.openai.com/docs/). The call to function
+**step(action)** returns: * **observation** (tuple of observations requested at
+construction), * **reward** (a float with the current reward of the agent), *
+**done** (boolean indicating whether the episode has ended) * and **info** (a
+dictionary of environment state variables). After creating the environment, it
+is initialised by calling function **reset()**. If the flag auto_reset is set to
+True at construction, **reset()** will be called automatically every time that
+an episode ends.
 
 ### Environment Settings
 
@@ -240,8 +280,8 @@ The following observations can be returned by the agent:
     corresponds to horizontal),
 *   **metadata**: Message protocol buffer of type Pano with the metadata of the
     current panorama,
-*   **target_metadata**: Message protocol buffer of type Pano with the metadata of the
-    target/goal panorama,
+*   **target_metadata**: Message protocol buffer of type Pano with the metadata
+    of the target/goal panorama,
 *   **latlng**: Tuple of lat/lng scalar values for the current position of the
     agent,
 *   **target_latlng**: Tuple of lat/lng scalar values for the target/goal
@@ -255,9 +295,21 @@ The following observations can be returned by the agent:
 
 The following games are available in the StreetLearn environment:
 
-* **coin_game**: invisible coins scattered throughout the map, yielding a reward of 1 for each. Once picked up, these rewards do not reappear until the end of the episode.
-* **courier_game**: the agent is given a goal destination, specified as lat/long pairs. Once the goal is reached (with 100m tolerance), a new goal is sampled, until the end of the episode. Rewards at a goal are proportional to the number of panoramas on the shortest path from the agent's position when it gets the new goal assignment to that goal position. Additional reward shaping consists in early rewards when the agent gets within a range of 200m of the goal. Additional coins can also be scattered throughout the environment. The proportion of coins, the goal radius and the early reward radius are parametrizable.
-* **curriculum_courier_game**: same as the courier game, but with a curriculum on the difficulty of the task (maximum straight-line distance from the agent's position to the goal when it is assigned).
+*   **coin_game**: invisible coins scattered throughout the map, yielding a
+    reward of 1 for each. Once picked up, these rewards do not reappear until
+    the end of the episode.
+*   **courier_game**: the agent is given a goal destination, specified as
+    lat/long pairs. Once the goal is reached (with 100m tolerance), a new goal
+    is sampled, until the end of the episode. Rewards at a goal are proportional
+    to the number of panoramas on the shortest path from the agent's position
+    when it gets the new goal assignment to that goal position. Additional
+    reward shaping consists in early rewards when the agent gets within a range
+    of 200m of the goal. Additional coins can also be scattered throughout the
+    environment. The proportion of coins, the goal radius and the early reward
+    radius are parametrizable.
+*   **curriculum_courier_game**: same as the courier game, but with a curriculum
+    on the difficulty of the task (maximum straight-line distance from the
+    agent's position to the goal when it is assigned).
 
 ## License
 
