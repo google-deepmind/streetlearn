@@ -128,6 +128,10 @@ pip install tensorflow-probability-gpu
 pip install pygame
 ```
 
+### Install Bazel
+
+[This page](https://bazel.build/) describes how to install the Bazel build and test tool on your machine.
+
 ### Building StreetLearn
 
 Clone this repository:
@@ -144,12 +148,11 @@ export CLIF_PATH=$HOME/opt
 bazel build streetlearn:streetlearn_engine_py
 ```
 
-To build the human agent in the StreetLearn environment, with all the
-dependencies:
+To build the human agent and the oracle agent in the StreetLearn environment, with all the dependencies:
 
 ```shell
 export CLIF_PATH=$HOME/opt
-bazel build streetlearn/python/human_agent
+bazel build streetlearn/python/human_agent:all
 ```
 
 ## Running the StreetLearn human agent
@@ -164,11 +167,16 @@ bazel run streetlearn/python/human_agent -- --dataset_path=<dataset path>
 For help with the options of the human_agent:
 
 ```shell
-bazel run streetlearn/python/human_agent --help
+bazel run streetlearn/python/human_agent -- --help
 ```
 
-The human agent shows a **view_image** (on top) and a **graph_image** (on
-bottom).
+Similarly, to run the oracle agent on the courier game:
+
+```shell
+bazel run streetlearn/python/human_agent:oracle_agent -- --dataset_path=<dataset path>
+```
+
+The human agent and the oracle agent show a **view_image** (on top) and a **graph_image** (on bottom).
 
 ### Actions available to an agent:
 
