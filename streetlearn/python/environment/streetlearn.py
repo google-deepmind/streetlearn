@@ -211,7 +211,7 @@ class StreetLearn(object):
     return self._bbox_lng_min
 
   @property
-  def bbox_lng_min(self):
+  def bbox_lng_max(self):
     return self._bbox_lng_max
 
   def observation_spec(self):

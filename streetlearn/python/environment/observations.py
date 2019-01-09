@@ -189,9 +189,9 @@ class LatLng(Observation):
     den = self._streetlearn.bbox_lat_max - self._streetlearn.bbox_lat_min
     return ((lat - self._streetlearn.bbox_lat_min) / den if (den > 0) else 0)
 
-  def _scale_lng(self, lat):
+  def _scale_lng(self, lng):
     den = self._streetlearn.bbox_lng_max - self._streetlearn.bbox_lng_min
-    return ((lat - self._streetlearn.bbox_lng_min) / den if (den > 0) else 0)
+    return ((lng - self._streetlearn.bbox_lng_min) / den if (den > 0) else 0)
 
   @property
   def observation_spec(self):
@@ -202,7 +202,7 @@ class LatLng(Observation):
     pano_id = self._streetlearn.current_pano_id
     pano_data = self._streetlearn.engine.GetMetadata(pano_id).pano
     lat_scaled = self._scale_lat(pano_data.coords.lat)
-    lng_scaled = self._scale_lat(pano_data.coords.lng)
+    lng_scaled = self._scale_lng(pano_data.coords.lng)
     return np.array([lat_scaled, lng_scaled], dtype=np.float64)
 
 
@@ -216,7 +216,7 @@ class TargetLatLng(LatLng):
     if goal_id:
       pano_data = self._streetlearn.engine.GetMetadata(goal_id).pano
       lat_scaled = self._scale_lat(pano_data.coords.lat)
-      lng_scaled = self._scale_lat(pano_data.coords.lng)
+      lng_scaled = self._scale_lng(pano_data.coords.lng)
       return np.array([lat_scaled, lng_scaled], dtype=np.float64)
     return np.array([0, 0], dtype=np.float64)
 
