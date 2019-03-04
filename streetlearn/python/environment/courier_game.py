@@ -191,7 +191,7 @@ class CourierGame(coin_game.CoinGame):
     self._pano_id_to_color = {coin_pano_id: self._colors['coin']
                               for coin_pano_id in self._coin_pano_id_set}
     self._update_pano_id_to_color()
-    for pano_id in shortest_path.iterkeys():
+    for pano_id in six.iterkeys(shortest_path):
       self._pano_id_to_color[pano_id] = self._colors['shortest_path']
     self._pano_id_to_color[self.goal_id] = self._colors['goal']
 

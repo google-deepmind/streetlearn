@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Basic human agent for StreetLearn."""
+"""Basic oracle agent for StreetLearn."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -31,17 +31,18 @@ from streetlearn.python.environment import default_config
 from streetlearn.python.environment import streetlearn
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer("width", 400, "Observation and map width.")
-flags.DEFINE_integer("height", 400, "Observation and map height.")
-flags.DEFINE_float("horizontal_rot", 22.5, "Horizontal rotation step (deg).")
-flags.DEFINE_string("dataset_path", None, "Dataset path.")
-flags.DEFINE_string("start_pano", "",
-                     "Pano at root of partial graph (default: full graph).")
-flags.DEFINE_integer("graph_depth", 200, "Depth of the pano graph.")
-flags.DEFINE_integer("frame_cap", 1000, "Number of frames / episode.")
-flags.DEFINE_string("stats_path", None, "Statistics path.")
-flags.DEFINE_float("proportion_of_panos_with_coins", 0, "Proportion of coins.")
-flags.mark_flag_as_required("dataset_path")
+flags.DEFINE_integer('width', 400, 'Observation and map width.')
+flags.DEFINE_integer('height', 400, 'Observation and map height.')
+flags.DEFINE_integer('graph_zoom', 1, 'Zoom level.')
+flags.DEFINE_float('horizontal_rot', 22.5, 'Horizontal rotation step (deg).')
+flags.DEFINE_string('dataset_path', None, 'Dataset path.')
+flags.DEFINE_string('start_pano', '',
+                     'Pano at root of partial graph (default: full graph).')
+flags.DEFINE_integer('graph_depth', 200, 'Depth of the pano graph.')
+flags.DEFINE_integer('frame_cap', 1000, 'Number of frames / episode.')
+flags.DEFINE_string('stats_path', None, 'Statistics path.')
+flags.DEFINE_float('proportion_of_panos_with_coins', 0, 'Proportion of coins.')
+flags.mark_flag_as_required('dataset_path')
 
 
 TOL_BEARING = 30
@@ -62,19 +63,17 @@ def interleave(array, w, h):
                   order='F').reshape(h, w, 3).swapaxes(0, 1)
 
 def loop(env, screen):
-  """Main loop of the human agent."""
+  """Main loop of the oracle agent."""
   action = np.array([0, 0, 0, 0])
   action_spec = env.action_spec()
-  graph = env.graph
   sum_rewards = 0
   sum_rewards_at_goal = 0
   previous_goal_id = None
   while True:
-    pano_id = env.current_pano_id
     observation = env.observation()
-    view_image = interleave(observation["view_image"],
+    view_image = interleave(observation['view_image'],
                             FLAGS.width, FLAGS.height)
-    graph_image = interleave(observation["graph_image"],
+    graph_image = interleave(observation['graph_image'],
                              FLAGS.width, FLAGS.height)
     screen_buffer = np.concatenate((view_image, graph_image), axis=1)
     pygame.surfarray.blit_array(screen, screen_buffer)
@@ -96,7 +95,7 @@ def loop(env, screen):
       sum_rewards_at_goal += reward
     previous_goal_id = info['current_goal_id']
     if done:
-      print("Episode reward: {}".format(sum_rewards))
+      print('Episode reward: {}'.format(sum_rewards))
       if FLAGS.stats_path:
         with open(FLAGS.stats_path, 'a') as f:
           f.write(str(sum_rewards) + '\t' + str(sum_rewards_at_goal) + '\n')
@@ -113,26 +112,26 @@ def loop(env, screen):
     # Bearing-based navigation.
     if bearing > TOL_BEARING:
       if bearing > TOL_BEARING + 2 * FLAGS.horizontal_rot:
-        action = 3 * FLAGS.horizontal_rot * action_spec["horizontal_rotation"]
+        action = 3 * FLAGS.horizontal_rot * action_spec['horizontal_rotation']
       else:
-        action = FLAGS.horizontal_rot * action_spec["horizontal_rotation"]
+        action = FLAGS.horizontal_rot * action_spec['horizontal_rotation']
     elif bearing < -TOL_BEARING:
       if bearing < -TOL_BEARING - 2 * FLAGS.horizontal_rot:
-        action = -3 * FLAGS.horizontal_rot * action_spec["horizontal_rotation"]
+        action = -3 * FLAGS.horizontal_rot * action_spec['horizontal_rotation']
       else:
-        action = -FLAGS.horizontal_rot * action_spec["horizontal_rotation"]
+        action = -FLAGS.horizontal_rot * action_spec['horizontal_rotation']
     else:
-      action = action_spec["move_forward"]
+      action = action_spec['move_forward']
 
 def main(argv):
   config = {'width': FLAGS.width,
             'height': FLAGS.height,
             'graph_width': FLAGS.width,
             'graph_height': FLAGS.height,
-            'graph_zoom': 1,
+            'graph_zoom': FLAGS.graph_zoom,
             'goal_timeout': FLAGS.frame_cap,
             'frame_cap': FLAGS.frame_cap,
-            'full_graph': (FLAGS.start_pano == ""),
+            'full_graph': (FLAGS.start_pano == ''),
             'start_pano': FLAGS.start_pano,
             'min_graph_depth': FLAGS.graph_depth,
             'max_graph_depth': FLAGS.graph_depth,

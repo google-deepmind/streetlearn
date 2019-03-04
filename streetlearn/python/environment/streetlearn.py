@@ -256,6 +256,22 @@ class StreetLearn(object):
     self._engine.InitGraphRenderer(self._color_for_observer, highlighted_panos)
     self._engine.SetZoom(_MAX_ZOOM)
 
+  def goto(self, pano_id, yaw):
+    """Go to a specific pano and yaw in the environment.
+
+    Args:
+      pano_id: a string containing the ID of a pano.
+      yaw: a float with relative yaw w.r.t. north.
+    Returns:
+      observation: tuple with observations.
+    """
+    current_pano_id = self._engine.SetPosition(pano_id)
+    assert pano_id == current_pano_id
+    yaw = (yaw + 180) % 360 - 180
+    self._engine.RotateObserver(yaw, 0.0)
+    assert yaw == self._engine.GetYaw()
+    return self.observation()
+
   def step(self, action):
     """Takes a step in the environment.
 

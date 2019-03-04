@@ -24,6 +24,9 @@ from streetlearn.python.environment import coin_game
 from streetlearn.python.environment import courier_game
 from streetlearn.python.environment import curriculum_courier_game
 from streetlearn.python.environment import exploration_game
+from streetlearn.python.environment import goal_instruction_game
+from streetlearn.python.environment import incremental_instruction_game
+from streetlearn.python.environment import step_by_step_instruction_game
 
 
 DEFAULT_CONFIG = {
@@ -44,37 +47,63 @@ DEFAULT_CONFIG = {
     'max_reward_per_goal': 10.0,
     'min_radius_meters': 100.0,
     'max_radius_meters': 200.0,
-    'goal_timeout': 1000,
-    'frame_cap': 1000,
     'timestamp_start_curriculum': 0.0,
     'annealing_rate_curriculum': 2.0,
     'hours_curriculum_part_1': 0.0,
     'hours_curriculum_part_2': 24.0,
     'min_goal_distance_curriculum': 500.0,
     'max_goal_distance_curriculum': 3500.0,
+    'instruction_curriculum_type': 0,
+    'curriculum_num_instructions_part_1': 2,
+    'curriculum_bin_distance': 100.0,
+    'curriculum_frame_cap': False,
+    'curriculum_frame_cap_part_1': 100,
+    'max_reward_per_cone': 0.49,
+    'cone_radius_meters': 50.0,
+    'goal_timeout': 1000,
+    'frame_cap': 1000,
     'full_graph': True,
     'sample_graph_depth': True,
     'start_pano': '',
     'graph_zoom': 32,
+    'show_shortest_path': False,
+    'calculate_ground_truth': False,
     'neighbor_resolution': 8,
     'color_for_touched_pano': color.Color(1.0, 0.5, 0.5),
-    'color_for_observer': color.Color(0.2, 0.2, 1.0),
+    'color_for_observer': color.Color(0.5, 0.5, 1.0),
     'color_for_coin': color.Color(1.0, 1.0, 0.0),
     'color_for_goal': color.Color(1.0, 0.0, 0.0),
-    'color_for_shortest_path': color.Color(0.5, 0.0, 0.5),
+    'color_for_shortest_path': color.Color(1.0, 0.0, 1.0),
+    'color_for_waypoint': color.Color(0, 0.7, 0.7),
     'observations': ['view_image', 'graph_image'],
     'reward_per_coin': 1.0,
+    'reward_at_waypoint': 0.5,
+    'reward_at_goal': 1.0,
+    'instruction_file': '',
+    'num_instructions': 5,
+    'max_instructions': 5,
     'proportion_of_panos_with_coins': 0.5,
-    'level_name': 'coin_game',
+    'game_name': 'coin_game',
     'action_spec': 'streetlearn_fast_rotate',
     'rotation_speed': 22.5,
     'auto_reset': True,
 }
 
-NAME_TO_LEVEL = {
-    'coin_game': coin_game.CoinGame,
-    'courier_game': courier_game.CourierGame,
-    'exploration_game': exploration_game.ExplorationGame,
+NAME_TO_GAME = {
+    'coin_game':
+        coin_game.CoinGame,
+    'courier_game':
+        courier_game.CourierGame,
+    'curriculum_courier_game':
+        curriculum_courier_game.CurriculumCourierGame,
+    'exploration_game':
+        exploration_game.ExplorationGame,
+    'goal_instruction_game':
+        goal_instruction_game.GoalInstructionGame,
+    'incremental_instruction_game':
+        incremental_instruction_game.IncrementalInstructionGame,
+    'step_by_step_instruction_game':
+        step_by_step_instruction_game.StepByStepInstructionGame,
 }
 
 def ApplyDefaults(config):
@@ -86,6 +115,6 @@ def ApplyDefaults(config):
       assert type(default_value) == type(result[default_key])
   return result
 
-def CreateLevel(name, config):
-  assert name in NAME_TO_LEVEL, "Unknown level name: %r" % name
-  return NAME_TO_LEVEL[name](config)
+def CreateGame(name, config):
+  assert name in NAME_TO_GAME, "Unknown game name: %r" % name
+  return NAME_TO_GAME[name](config)

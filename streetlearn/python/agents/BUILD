@@ -1,4 +1,4 @@
-# Streetlearn BUILD file.
+# Scalable Agent BUILD file, as part of the StreetLearn library.
 #
 # Copyright 2018 Google LLC.
 #
@@ -21,26 +21,11 @@ licenses(["notice"])  # Apache v2
 exports_files(["LICENSE"])
 
 py_library(
-    name = "environment_py",
+    name = "agents_py",
     srcs = [
-        "coin_game.py",
-        "courier_game.py",
-        "curriculum_courier_game.py",
-        "default_config.py",
-        "exploration_game.py",
-        "game.py",
-        "goal_instruction_game.py",
-        "incremental_instruction_game.py",
-        "instructions_base.py",
-        "instructions_curriculum.py",
-        "instructions_densification.py",
-        "observations.py",
-        "step_by_step_instruction_game.py",
-        "streetlearn.py",
-        "thumbnail_helper.py",
-    ],
-    deps = [
-        "//streetlearn/engine/python:color",
-        "//streetlearn/engine/python:streetlearn_engine",
+        "city_nav_agent.py",
+        "goal_nav_agent.py",
+        "locale_pathway.py",
+        "plain_agent.py",
     ],
 )

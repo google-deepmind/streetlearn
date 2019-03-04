@@ -22,6 +22,8 @@ import numpy as np
 
 _METADATA_COUNT = 14
 _NUM_HEADING_BINS = 16
+_NUM_LAT_BINS = 32
+_NUM_LNG_BINS = 32
 
 
 class Observation(object):
@@ -45,7 +47,9 @@ class Observation(object):
   def create(cls, name, streetlearn):
     """Dispatches an Observation based on `name`."""
     observations = [ViewImage, GraphImage, Yaw, Pitch, Metadata, TargetMetadata,
-                    LatLng, TargetLatLng, YawLabel, Neighbors]
+                    LatLng, TargetLatLng, YawLabel, Neighbors, LatLngLabel,
+                    TargetLatLngLabel, Thumbnails, Instructions,
+                    GroundTruthDirection]
     dispatch = {o.name: o for o in observations}
     try:
       return dispatch[name](streetlearn)
@@ -206,6 +210,30 @@ class LatLng(Observation):
     return np.array([lat_scaled, lng_scaled], dtype=np.float64)
 
 
+class LatLngLabel(LatLng):
+  """The agent's current yaw (different from the current pano heading)."""
+  name = 'latlng_label'
+  observation_spec_dtypes = np.int32
+
+  def _latlng_bin(self, pano_id):
+    pano_data = self._streetlearn.engine.GetMetadata(pano_id).pano
+    lat_bin = np.floor(self._scale_lat(pano_data.coords.lat) * _NUM_LAT_BINS)
+    lat_bin = np.max([np.min([lat_bin, _NUM_LAT_BINS-1]), 0])
+    lng_bin = np.floor(self._scale_lng(pano_data.coords.lng) * _NUM_LNG_BINS)
+    lng_bin = np.max([np.min([lng_bin, _NUM_LNG_BINS-1]), 0])
+    latlng_bin = lat_bin * _NUM_LNG_BINS + lng_bin
+    return latlng_bin
+
+  @property
+  def observation_spec(self):
+    return [0]
+
+  @property
+  def observation(self):
+    pano_id = self._streetlearn.current_pano_id
+    return np.array(self._latlng_bin(pano_id), dtype=np.int32)
+
+
 class TargetLatLng(LatLng):
   """The agent's target lat/lng coordinates."""
   name = 'target_latlng'
@@ -219,6 +247,61 @@ class TargetLatLng(LatLng):
       lng_scaled = self._scale_lng(pano_data.coords.lng)
       return np.array([lat_scaled, lng_scaled], dtype=np.float64)
     return np.array([0, 0], dtype=np.float64)
+
+
+class TargetLatLngLabel(LatLngLabel):
+  """The agent's current yaw (different from the current pano heading)."""
+  name = 'target_latlng_label'
+
+  @property
+  def observation(self):
+    goal_id = self._streetlearn.game.goal_id
+    if goal_id:
+      return np.array(self._latlng_bin(goal_id), dtype=np.int32)
+    return np.array(0, dtype=np.int32)
+
+
+class Thumbnails(Observation):
+  """Thumbnails' pixel data."""
+  name = 'thumbnails'
+  observation_spec_dtypes = np.uint8
+
+  @property
+  def observation_spec(self):
+    return self._streetlearn.game.thumbnails().shape
+
+  @property
+  def observation(self):
+    return self._streetlearn.game.thumbnails()
+
+
+class Instructions(Observation):
+  """StreetLang instructions."""
+  name = 'instructions'
+  observation_spec_dtypes = str
+
+  @property
+  def observation_spec(self):
+    return [1]
+
+  @property
+  def observation(self):
+    return ('|'.join(self._streetlearn.game.instructions())).encode('utf-8')
+
+
+class GroundTruthDirection(Observation):
+  """Direction in degrees that the agent needs to take now."""
+  name = 'ground_truth_direction'
+  observation_spec_dtypes = np.float32
+
+  @property
+  def observation_spec(self):
+    return [0]
+
+  @property
+  def observation(self):
+    return np.array(self._streetlearn.game.ground_truth_direction(),
+                    dtype=np.float32)
 
 
 class Neighbors(Observation):

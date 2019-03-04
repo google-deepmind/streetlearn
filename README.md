@@ -27,10 +27,10 @@ code have been published by Lasse Espeholt under an Apache license at:
 ### Bibtex
 
 ```
-@article{mirowski2018learning,
+@inproceedings{mirowski2018learning,
   title={Learning to Navigate in Cities Without a Map},
   author={Mirowski, Piotr and Grimes, Matthew Koichi and Malinowski, Mateusz and Hermann, Karl Moritz and Anderson, Keith and Teplyashin, Denis and Simonyan, Karen and Kavukcuoglu, Koray and Zisserman, Andrew and Hadsell, Raia},
-  journal={arXiv preprint arXiv:1804.00168},
+  booktitle={Neural Information Processing Systems (NeurIPS)},
   year={2018}
 }
 ```
@@ -49,13 +49,19 @@ This environment code contains:
     [protocol buffer](https://developers.google.com/protocol-buffers/) used to
     store panoramas and street graph.
 *   **streetlearn/python/environment** A Python-based interface for calling the
-    StreetLearn environment with custom action spaces.
-*   **streetlearn/python/human_agent** A simple human agent, implemented in
-    Python using pygame, that instantiates the StreetLearn environment on the
-    requested map and enables a user to play the courier game. The directory
-    also contains an oracle agent, similar to the human agent, which
-    automatically navigates towards the goal and reports oracle performance on
-    the courier game.
+    StreetLearn environment with custom action spaces. Within the Python
+    StreetLearn interface, several games are defined in individual files whose
+    names end with **_game.py**.
+*   **streetlearn/python/ui** A simple interactive **human_agent** and an
+    **oracle_agent** and **instruction_following_oracle_agent** for courier and
+    instruction-following tasks respectively; all agents are implemented in
+    Python using pygame and instantiate the StreetLearn environment on the
+    requested map, along with a simple user interface. The interactive
+    **human_agent** enables a user to play various games. The **oracle_agent**
+    and **instruction_following_oracle_agent** are similar to the human agent
+    and automatically navigate towards the goal (courier game) or towards the
+    goal via waypoints, following instructions (instruction-following game) and
+    they report oracle performance on these tasks.
 
 ## Compilation from source
 
@@ -130,15 +136,18 @@ pip install pygame
 
 ### Install Bazel
 
-[This page](https://bazel.build/) describes how to install the Bazel build and test tool on your machine.
+[This page](https://bazel.build/) describes how to install the Bazel build and
+test tool on your machine.
 
 ### Building StreetLearn
 
-Clone this repository:
+Clone this repository and install
+[Scalable Agent](https://github.com/deepmind/scalable_agent):
 
 ```shell
 git clone https://github.com/deepmind/streetlearn.git
 cd streetlearn
+sh get_scalable_agent.sh
 ```
 
 To build the StreetLearn engine only:
@@ -148,11 +157,12 @@ export CLIF_PATH=$HOME/opt
 bazel build streetlearn:streetlearn_engine_py
 ```
 
-To build the human agent and the oracle agent in the StreetLearn environment, with all the dependencies:
+To build the human agent and the oracle agent in the StreetLearn environment,
+with all the dependencies:
 
 ```shell
 export CLIF_PATH=$HOME/opt
-bazel build streetlearn/python/human_agent:all
+bazel build streetlearn/python/ui:all
 ```
 
 ## Running the StreetLearn human agent
@@ -161,22 +171,23 @@ To run the human agent using one of the StreetLearn datasets downloaded and
 stored at **dataset_path**:
 
 ```shell
-bazel run streetlearn/python/human_agent -- --dataset_path=<dataset path>
+bazel run streetlearn/python/ui:human_agent -- --dataset_path=<dataset path>
 ```
 
 For help with the options of the human_agent:
 
 ```shell
-bazel run streetlearn/python/human_agent -- --help
+bazel run streetlearn/python/ui:human_agent -- --help
 ```
 
 Similarly, to run the oracle agent on the courier game:
 
 ```shell
-bazel run streetlearn/python/human_agent:oracle_agent -- --dataset_path=<dataset path>
+bazel run streetlearn/python/ui:oracle_agent -- --dataset_path=<dataset path>
 ```
 
-The human agent and the oracle agent show a **view_image** (on top) and a **graph_image** (on bottom).
+The human agent and the oracle agent show a **view_image** (on top) and a
+**graph_image** (on bottom).
 
 ### Actions available to an agent:
 
@@ -238,7 +249,6 @@ an episode ends.
 
 Default environment settings are stored in streetlearn/python/default_config.py.
 
-*   **width**: Width of rendered window.
 *   **seed**: Random seed.
 *   **width**: Width of the streetview image.
 *   **height**: Height of the streetview image.
@@ -249,6 +259,28 @@ Default environment settings are stored in streetlearn/python/default_config.py.
 *   **min_graph_depth**: Min bound on BFS depth for panos.
 *   **max_graph_depth**: Max bound on BFS depth for panos.
 *   **max_cache_size**: Pano cache size.
+*   **bbox_lat_min**: Minimum value for normalizing the target latitude.
+*   **bbox_lat_max**: Maximum value for normalizing the target latitude.
+*   **bbox_lng_min**: Minimum value for normalizing the target longitude.
+*   **bbox_lng_max**: Maximum value for normalizing the target longitude.
+*   **min_radius_meters**: Minimum distance from goal at which reward shaping
+    starts in the courier game.
+*   **max_radius_meters**: Maximum distance from goal at which reward shaping
+    starts in the courier game.
+*   **timestamp_start_curriculum**: Integer timestamp (UNIX time) when
+    curriculum learning starts, used in the curriculum courier game.
+*   **hours_curriculum_part_1**: Number of hours for the first part of
+    curriculum training (goal location within minimum distance), used in the
+    curriculum courier game.
+*   **hours_curriculum_part_2**: Number of hours for the second part of
+    curriculum training (goal location annealed further away), used in the
+    curriculum courier game.
+*   **min_goal_distance_curriculum**: Distance in meters of the goal location at
+    the beginning of curriculum learning, used in the curriculum courier game.
+*   **max_goal_distance_curriculum**: Distance in meters of the goal location at
+    the beginning of curriculum learning, used in the curriculum courier game.
+*   **instruction_curriculum_type**: Type of curriculum learning, used in the
+    instruction following games.
 *   **frame_cap**: Episode frame cap.
 *   **full_graph**: Boolean indicating whether to build the entire graph upon
     episode start.
@@ -257,22 +289,38 @@ Default environment settings are stored in streetlearn/python/default_config.py.
 *   **start_pano**: The pano ID string to start from. The graph will be build
     out from this point.
 *   **graph_zoom**: Initial graph zoom. Valid between 1 and 32.
+*   **show_shortest_path**: Boolean indicator asking whether the shortest path
+    to the goal shall be shown on the graph.
+*   **calculate_ground_truth**: Boolean indicator asking whether the ground
+    truth direction to the goal should be calculated during the game (useful for
+    oracle agents, visualisation and for imitation learning).
 *   **neighbor_resolution**: Used to calculate a binary occupancy vector of
     neighbors to the current pano.
+*   **color_for_touched_pano**: RGB color for the panos touched by the agent.
 *   **color_for_observer**: RGB color for the observer.
 *   **color_for_coin**: RGB color for the panos containing coins.
 *   **color_for_goal**: RGB color for the goal pano.
+*   **color_for_shortest_path**: RGB color for panos on the shortest path to the
+    goal.
+*   **color_for_waypoint**: RGB color for a waypoint pano.
 *   **observations**: Array containing one or more names of the observations
     requested from the environment: ['view_image', 'graph_image', 'yaw',
     'pitch', 'metadata', 'target_metadata', 'latlng', 'target_latlng',
-    'yaw_label', 'neighbors']
+    'latlng_label', 'target_latlng_label', 'yaw_label', 'neighbors',
+    'thumbnails', 'instructions', 'ground_truth_direction']
 *   **reward_per_coin**: Coin reward for coin game.
+*   **reward_at_waypoint**: Waypoint reward for the instruction-following games.
+*   **reward_at_goal**: Goal reward for the instruction-following games.
 *   **proportion_of_panos_with_coins**: The proportion of panos with coins.
-*   **level_name**: Level name, can be: 'coin_game', 'exploration_game'.
+*   **game_name**: Game name, can be: 'coin_game', 'exploration_game',
+    'courier_game', 'curriculum_courier_game', 'goal_instruction_game',
+    'incremental_instruction_game' and 'step_by_step_instruction_game'.
 *   **action_spec**: Either of 'streetlearn_default', 'streetlearn_fast_rotate',
     'streetlearn_tilt'
 *   **rotation_speed**: Rotation speed in degrees. Used to create the action
     spec.
+*   **auto_reset**: Boolean indicator whether games are reset automatically when
+    the max number of frames is achieved.
 
 ### Observations
 
@@ -294,10 +342,25 @@ The following observations can be returned by the agent:
     agent,
 *   **target_latlng**: Tuple of lat/lng scalar values for the target/goal
     position,
+*   **latlng_label**: Integer discretized value of the current agent position
+    using 1024 bins (32 bins for latitude and 32 bins for longitude),
+*   **target_latlng_label**: Integer discretized value of the target position
+    using 1024 bins (32 bins for latitude and 32 bins for longitude),
 *   **yaw_label**: Integer discretized value of the agent yaw using 16 bins,
 *   **neighbors**: Vector of immediate neighbor egocentric traversability grid
     around the agent, with 16 bins for the directions around the agent and bin 0
     corresponding to the traversability straight ahead of the agent.
+*   **thumbnails**: Array of n+1 RGB images for the first-person view image
+    returned from the environment, that should be seen by the agent at specific
+    waypoints and goal locations when playing the instruction-following game
+    with n instructions,
+*   **instructions**: List of n string instructions for the agent at specific
+    waypoints and goal locations when playing the instruction-following game
+    with n instructions,
+*   **ground_truth_direction**: Scalar value of the relative ground truth
+    direction to be taken by the agent in order to follow a shortest path to the
+    next goal or waypoint. This observation should be requested only for agents
+    trained using imitation learning.
 
 ### Games
 
@@ -318,6 +381,19 @@ The following games are available in the StreetLearn environment:
 *   **curriculum_courier_game**: same as the courier game, but with a curriculum
     on the difficulty of the task (maximum straight-line distance from the
     agent's position to the goal when it is assigned).
+*   **goal_instruction_game** and its variations
+    **incremental_instruction_game** and **step_by_step_instruction_game** use
+    navigation instructions to direct agents to a goal. Agents are provided with
+    a list of instructions as well as thumbnails that guide the agent from its
+    starting position to the goal location. In
+    **step_by_step_instruction_game**, agents are provided one instruction and
+    two thumbnails at a time, in the other game variants the whole list is
+    available throughout the whole game. Reward is granted upon reaching the
+    goal location (all variants), as well as when hitting individual waypoints
+    (**incremental_instruction_game** and **step_by_step_instruction_game**
+    only). During training various curriculum strategies are available to the
+    agents, and reward shaping can be employed to provide fractional rewards
+    when the agent gets within a range of 50m of a waypoint or goal.
 
 ## License
 

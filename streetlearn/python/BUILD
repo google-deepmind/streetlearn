@@ -20,27 +20,14 @@ licenses(["notice"])  # Apache v2
 
 exports_files(["LICENSE"])
 
-py_library(
-    name = "environment_py",
-    srcs = [
-        "coin_game.py",
-        "courier_game.py",
-        "curriculum_courier_game.py",
-        "default_config.py",
-        "exploration_game.py",
-        "game.py",
-        "goal_instruction_game.py",
-        "incremental_instruction_game.py",
-        "instructions_base.py",
-        "instructions_curriculum.py",
-        "instructions_densification.py",
-        "observations.py",
-        "step_by_step_instruction_game.py",
-        "streetlearn.py",
-        "thumbnail_helper.py",
-    ],
+py_binary(
+    name = "experiment",
+    srcs = ["experiment.py"],
     deps = [
-        "//streetlearn/engine/python:color",
-        "//streetlearn/engine/python:streetlearn_engine",
+        "//streetlearn/proto:streetlearn_py_pb2",
+        "//streetlearn/python/agents:agents_py",
+        "//streetlearn/python/environment:environment_py",
+        "//streetlearn/python/scalable_agent:py_process",
+        "//streetlearn/python/scalable_agent:vtrace",
     ],
 )

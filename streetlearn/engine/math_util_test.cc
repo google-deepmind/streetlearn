@@ -25,7 +25,7 @@ using ::testing::Eq;
 
 template <typename T>
 class MathUtilTest : public ::testing::Test {};
-TYPED_TEST_CASE_P(MathUtilTest);
+TYPED_TEST_SUITE_P(MathUtilTest);
 
 TYPED_TEST_P(MathUtilTest, ClampTest) {
   constexpr TypeParam kLow = static_cast<TypeParam>(7);
@@ -50,10 +50,10 @@ TEST(StreetLearn, AngleConversionsTest) {
   EXPECT_DOUBLE_EQ(DegreesToRadians(180), M_PI);
 }
 
-REGISTER_TYPED_TEST_CASE_P(MathUtilTest, ClampTest);
+REGISTER_TYPED_TEST_SUITE_P(MathUtilTest, ClampTest);
 
 using Types = ::testing::Types<int, float, double>;
-INSTANTIATE_TYPED_TEST_CASE_P(TpedMathUtilTests, MathUtilTest, Types);
+INSTANTIATE_TYPED_TEST_SUITE_P(TpedMathUtilTests, MathUtilTest, Types);
 
 }  // namespace
 }  // namespace math

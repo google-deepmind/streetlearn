@@ -24,7 +24,7 @@ using ::testing::Eq;
 
 template <typename T>
 class ImageTest : public ::testing::Test {};
-TYPED_TEST_CASE_P(ImageTest);
+TYPED_TEST_SUITE_P(ImageTest);
 
 TYPED_TEST_P(ImageTest, EmptyImageTest) {
   constexpr int kChannels = 3;
@@ -103,11 +103,11 @@ TYPED_TEST_P(ImageTest, ImageViewAccessTest) {
   }
 }
 
-REGISTER_TYPED_TEST_CASE_P(ImageTest, EmptyImageTest, EmptyImageViewTest,
-                           CreationTest, ImageAccessTest, ImageViewAccessTest);
+REGISTER_TYPED_TEST_SUITE_P(ImageTest, EmptyImageTest, EmptyImageViewTest,
+                            CreationTest, ImageAccessTest, ImageViewAccessTest);
 
 using Types = ::testing::Types<unsigned char, float, double>;
-INSTANTIATE_TYPED_TEST_CASE_P(TypedImageTests, ImageTest, Types);
+INSTANTIATE_TYPED_TEST_SUITE_P(TypedImageTests, ImageTest, Types);
 
 }  // namespace
 }  // namespace streetlearn

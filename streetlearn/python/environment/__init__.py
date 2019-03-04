@@ -21,10 +21,15 @@ from __future__ import print_function
 
 from streetlearn.python.environment.coin_game import CoinGame
 from streetlearn.python.environment.courier_game import CourierGame
+from streetlearn.python.environment.curriculum_courier_game import CurriculumCourierGame
 from streetlearn.python.environment.default_config import ApplyDefaults
-from streetlearn.python.environment.default_config import CreateLevel
+from streetlearn.python.environment.default_config import CreateGame
 from streetlearn.python.environment.exploration_game import ExplorationGame
 from streetlearn.python.environment.game import Game
+from streetlearn.python.environment.goal_instruction_game import GoalInstructionGame
+from streetlearn.python.environment.incremental_instruction_game import IncrementalInstructionGame
 from streetlearn.python.environment.observations import Observation
+from streetlearn.python.environment.step_by_step_instruction_game import StepByStepInstructionGame
 from streetlearn.python.environment.streetlearn import get_action_set
 from streetlearn.python.environment.streetlearn import StreetLearn
+from streetlearn.python.environment.thumbnail_helper import ThumbnailHelper

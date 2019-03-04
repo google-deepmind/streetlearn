@@ -1,4 +1,4 @@
-# Streetlearn BUILD file.
+# Scalable Agent BUILD file, as part of the StreetLearn library.
 #
 # Copyright 2018 Google LLC.
 #
@@ -20,22 +20,22 @@ licenses(["notice"])  # Apache v2
 
 exports_files(["LICENSE"])
 
-py_binary(
-    name = "human_agent",
-    srcs = ["human_agent.py"],
+py_library(
+    name = "py_process",
+    srcs = ["py_process.py"],
+)
+
+py_library(
+    name = "vtrace",
+    srcs = ["vtrace.py"],
+)
+
+py_library(
+    name = "scalable_agent_py",
+    srcs = ["__init__.py"],
     deps = [
-        "//streetlearn/engine/python:streetlearn_engine",
-        "//streetlearn/proto:streetlearn_py_pb2",
-        "//streetlearn/python/environment:environment_py",
+        ":py_process",
+        ":vtrace",
     ],
 )
 
-py_binary(
-    name = "oracle_agent",
-    srcs = ["oracle_agent.py"],
-    deps = [
-        "//streetlearn/engine/python:streetlearn_engine",
-        "//streetlearn/proto:streetlearn_py_pb2",
-        "//streetlearn/python/environment:environment_py",
-    ],
-)

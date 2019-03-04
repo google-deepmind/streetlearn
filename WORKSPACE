@@ -61,21 +61,20 @@ http_archive(
 
 http_archive(
     name = "org_tensorflow",
-    sha256 = "dfee0f57366a6fab16a103d3a6d190c327f01f9a12651e45a128051eaf612f20",
-    strip_prefix = "tensorflow-1.11.0",
+    sha256 = "902a6d90bb69549fe241377210aa459773459820da1333b67dcfdef37836f25f",
+    strip_prefix = "tensorflow-1.13.1",
     urls = [
-        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/v1.11.0.zip",
-        "https://github.com/tensorflow/tensorflow/archive/v1.11.0.zip",
+        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/v1.13.1.zip",
+        "https://github.com/tensorflow/tensorflow/archive/v1.13.1.zip",
     ],
 )
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "013b820c64874dae78f3dbb561f1f6ee2b3367bbdc10f086534c0acddbd434e7",
-    strip_prefix = "rules_closure-0.8.0",
+    sha256 = "319e5e0127a83436b55588877a9d81464c2780c0dffc809065cf299d772670f5",
+    strip_prefix = "rules_closure-87d24b1df8b62405de8dd059cb604fd9d4b1e395",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_closure/archive/0.8.0.zip",
-        "https://github.com/bazelbuild/rules_closure/archive/0.8.0.zip",
+        "https://github.com/bazelbuild/rules_closure/archive/87d24b1df8b62405de8dd059cb604fd9d4b1e395.zip",
     ],
 )
 

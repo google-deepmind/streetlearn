@@ -87,7 +87,7 @@ class CurriculumCourierGame(courier_game.CourierGame):
       # During part 2 of the curriculum, sample goals within a distance
       # that grows from a minimum value to a maximum value.
       numerator = hours_train - self._hours_curriculum_part_1
-      denom = self._hours_curriculum_part_2 - self._hours_curriculum_part_1
+      denom = self._hours_curriculum_part_2
       time_factor = pow(min(1, max(0, numerator / denom)), self._annealing_rate)
       self._allowed_goal_distance = (
           (self._max_goal_distance - self._min_goal_distance

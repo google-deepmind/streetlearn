@@ -18,12 +18,16 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
+import collections
 import math
+import numpy as np
 from absl import logging
 import six
 
 from streetlearn.engine.python import color
 
+EMPTY_THUMBMNAILS = np.empty((0, 3, 0, 0))
+EMPTY_GT_DIRECTION = np.empty((0,))
 # When computing which panos B_i are immediately reachable from a given pano A,
 # we look at all panos B_i up to depth TOL_DEPTH in a graph whose root is A,
 # with a difference in altitude less than TOL_ALT meters, and within a cone
@@ -81,6 +85,18 @@ class Game(object):
     """Returns the id of the goal pano, if there is one."""
     return None
 
+  def ground_truth_direction(self):
+    """Returns the float angle with the ground truth direction for the agent."""
+    return EMPTY_GT_DIRECTION
+
+  def thumbnails(self):
+    """Returns observation thumbnails array of shape (batch_size, 3, h, w)."""
+    return EMPTY_THUMBMNAILS
+
+  def instructions(self):
+    """Returns a string containing game specific instructions."""
+    return str()
+
   def highlighted_panos(self):
     """Returns the list of highlighted panos and their colors."""
     return {}
@@ -96,24 +112,27 @@ class Game(object):
     Args:
       streetlearn: the streetlearn environment.
     """
+    logging.info('Storing the altitudes of each pano for faster retrieval.')
+    altitudes = {}
+    for pano_id in six.iterkeys(streetlearn.graph):
+      altitudes[pano_id] = streetlearn.engine.GetMetadata(pano_id).pano.alt
     logging.info('Computing the extended directed graph.')
     self._extended_graph_from = {}
-    self._extended_graph_to = {}
+    self._extended_graph_to = collections.defaultdict(list)
     num_panos = 0
     num_panos_total = len(streetlearn.graph)
     num_edges_extended = 0
-    for current_id in streetlearn.graph.iterkeys():
+    for current_id in six.iterkeys(streetlearn.graph):
 
       # Find the neighbors up to depth 3 of the current pano, not separated
       # by a drop of 2m in altitude.
-      current_metadata = streetlearn.engine.GetMetadata(current_id).pano
       visited = {}
       queue_panos = [(current_id, 0)]
       while queue_panos:
         elem = queue_panos.pop(0)
         pano_id = elem[0]
         depth = elem[1]
-        visited[pano_id] = depth
+        current_alt = altitudes[current_id]
         if depth > 0:
           # Store the distance and bearing to each neighbor.
           dist = streetlearn.engine.GetPanoDistance(current_id, pano_id)
@@ -124,19 +143,17 @@ class Game(object):
           neighbors = streetlearn.graph[pano_id]
           for neighbor_id in neighbors:
             if neighbor_id not in visited:
-              neighbor_metadata = streetlearn.engine.GetMetadata(
-                  neighbor_id).pano
-              if (depth == 0 or
-                  abs(neighbor_metadata.alt - current_metadata.alt) < TOL_ALT):
+              neighbor_alt = altitudes[neighbor_id]
+              if depth == 0 or abs(neighbor_alt - current_alt) < TOL_ALT:
                 queue_panos.append((neighbor_id, depth+1))
       visited.pop(current_id)
 
       # Select only neighbors that are the closest within a tolerance cone,
       # and create extended graphs.
       self._extended_graph_from[current_id] = {}
-      for pano_id, (dist, bearing) in visited.iteritems():
+      for pano_id, (dist, bearing) in six.iteritems(visited):
         retain_pano_id = True
-        for other_id, (other_dist, other_bearing) in visited.iteritems():
+        for other_id, (other_dist, other_bearing) in six.iteritems(visited):
           if ((pano_id != other_id) and
               (180 - abs(abs(bearing - other_bearing) - 180) < TOL_BEARING) and
               (other_dist < dist)):
@@ -144,10 +161,7 @@ class Game(object):
         if retain_pano_id:
           self._extended_graph_from[current_id][pano_id] = (dist, bearing)
           num_edges_extended += 1
-          if pano_id in self._extended_graph_to:
-            self._extended_graph_to[pano_id].append((current_id, dist, bearing))
-          else:
-            self._extended_graph_to[pano_id] = [(current_id, dist, bearing)]
+          self._extended_graph_to[pano_id].append((current_id, dist, bearing))
 
       num_panos += 1
       if num_panos % 1000 == 0:
@@ -180,7 +194,7 @@ class Game(object):
           if isinstance(neighbor_id, tuple):
             neighbor_id = neighbor_id[0]
           if neighbor_id not in flagged:
-            flagged[neighbor_id] = True
+            flagged.add(neighbor_id)
             queue_panos.append((neighbor_id, current_pano_id, depth+1))
     return flagged, visited
 
@@ -205,8 +219,7 @@ class Game(object):
     # using the direct connection graph.
     logging.info('Computing shortest paths to %s using BFS on direct graph',
                  target_pano_id)
-    flagged_direct = {}
-    flagged_direct[target_pano_id] = True
+    flagged_direct = set([target_pano_id])
     (_, visited_direct) = self._bfs(
         [(target_pano_id, None, 0)], streetlearn.graph, flagged_direct, {})
 
@@ -214,8 +227,7 @@ class Game(object):
     # using the extended (reachable) graph, with shortcuts.
     logging.info('Computing shortest paths to %s using BFS on extended graph',
                  target_pano_id)
-    flagged_extended = {}
-    flagged_extended[target_pano_id] = True
+    flagged_extended = set([target_pano_id])
     (_, visited_extended) = self._bfs(
         [(target_pano_id, None, 0)], self._extended_graph_to, flagged_extended,
         {})
@@ -226,12 +238,14 @@ class Game(object):
     # pano of the graph to the goal pano, we backfill visited_extended
     # with visited_direct, which is computed on the direct connection graph.
     self._panos_to_goal = {}
-    for child, (parent, _) in visited_direct.iteritems():
+    for child, (parent, _) in six.iteritems(visited_direct):
       if child in visited_extended:
         (parent, _) = visited_extended[child]
       self._panos_to_goal[child] = parent
 
-    # Compute the shortest path from the current starting position.
+    # Extract the shortest path, from the current starting position, by
+    # following the panos to goal as computed by the BFS search that started
+    # from the goal.
     current_pano_id = start_pano_id
     list_panos = [current_pano_id]
     next_pano_id = self._panos_to_goal[current_pano_id]
@@ -240,6 +254,12 @@ class Game(object):
       current_pano_id = next_pano_id
       next_pano_id = self._panos_to_goal[current_pano_id]
 
+    # Because of the Street View direct graph connectivity and because of how
+    # the StreetLearn extended graph adds edges when two panos that are distant
+    # by up to 2 links can still be directly reached, we need to "iron out"
+    # the path at street intersections. This code transforms a -> b -> c -> d
+    # into a -> b' -> c' -> d if the latter is shorter (in metric distance)
+    # and a -> b -> c into a -> b' -> c' -> c if the latter is shorter.
     shortest_path = {}
     num_panos = 0
     while num_panos < len(list_panos)-3:
@@ -259,17 +279,17 @@ class Game(object):
         (dist_bc, _) = self._extended_graph_from[b][c]
         (dist_cd, _) = self._extended_graph_from[c][d]
         dist_abc = dist_ab + dist_bc
-        dist_abcd = dist_ab + dist_bc + dist_cd
-        for b2 in self._extended_graph_from[a].iterkeys():
+        dist_abcd = dist_abc + dist_cd
+        for b2 in six.iterkeys(self._extended_graph_from[a]):
           if b2 != b:
-            for c2 in self._extended_graph_from[b2].iterkeys():
-              for d2 in self._extended_graph_from[c2].iterkeys():
-                if (d2 == c) or (d2 == d):
+            for c2 in six.iterkeys(self._extended_graph_from[b2]):
+              for d2 in six.iterkeys(self._extended_graph_from[c2]):
+                if d2 == c or d2 == d:
                   (dist_ab2, _) = self._extended_graph_from[a][b2]
                   (dist_bc2, _) = self._extended_graph_from[b2][c2]
                   (dist_cd2, _) = self._extended_graph_from[c2][d2]
                   dist_abcd2 = dist_ab2 + dist_bc2 + dist_cd2
-                  if (d2 == c) and (dist_abcd2 < dist_abc):
+                  if d2 == c and dist_abcd2 < dist_abc:
                     self._panos_to_goal[a] = b2
                     self._panos_to_goal[b2] = c2
                     self._panos_to_goal[c2] = c
@@ -279,7 +299,7 @@ class Game(object):
                     logging.info('Replaced %s, %s, %s by %s, %s, %s, %s',
                                  a, b, c, a, b2, c2, d2)
                     skipped = 2
-                  if (d2 == d) and (dist_abcd2 < dist_abcd):
+                  if d2 == d and dist_abcd2 < dist_abcd:
                     self._panos_to_goal[a] = b2
                     self._panos_to_goal[b2] = c2
                     self._panos_to_goal[c2] = d
