@@ -79,7 +79,7 @@ DEFAULT_CONFIG = {
     'reward_per_coin': 1.0,
     'reward_at_waypoint': 0.5,
     'reward_at_goal': 1.0,
-    'instruction_file': '',
+    'instruction_file': None,
     'num_instructions': 5,
     'max_instructions': 5,
     'proportion_of_panos_with_coins': 0.5,
