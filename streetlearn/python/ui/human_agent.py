@@ -47,8 +47,8 @@ flags.DEFINE_string('dataset_path', None, 'Dataset path.')
 flags.DEFINE_string('instruction_file', None, 'Instruction path.')
 flags.DEFINE_string(
     'game',
-    'incremental_instruction_game',
-    'Game name [courier_game|goal_instruction_game|'
+    'coin_game',
+    'Game name [coin_game|courier_game|goal_instruction_game|'
     'incremental_instruction_game|step_by_step_instruction_game]')
 flags.DEFINE_float('reward_at_waypoint', 0.5, 'Reward at waypoint.')
 flags.DEFINE_float('reward_at_goal', 1.0, 'Reward at waypoint.')
@@ -230,7 +230,7 @@ def main(argv):
   config = default_config.ApplyDefaults(config)
   if FLAGS.game == 'coin_game':
     game = coin_game.CoinGame(config)
-  if FLAGS.game == 'courier_game':
+  elif FLAGS.game == 'courier_game':
     game = courier_game.CourierGame(config)
   elif FLAGS.game == 'goal_instruction_game':
     game = goal_instruction_game.GoalInstructionGame(config)
@@ -240,7 +240,7 @@ def main(argv):
     game = step_by_step_instruction_game.StepByStepInstructionGame(config)
   else:
     print('Unknown game: [{}]'.format(FLAGS.game))
-    print('Run instruction_following_oracle_agent --help.')
+    print('Run with --help for available options.')
     return
   env = streetlearn.StreetLearn(FLAGS.dataset_path, config, game)
   env.reset()
