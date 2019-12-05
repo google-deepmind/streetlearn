@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "streetlearn/engine/dataset.h"
+#include "streetlearn/engine/leveldb_dataset.h"
 
 #include <string>
 #include <utility>
@@ -25,9 +25,10 @@
 
 namespace streetlearn {
 
-constexpr char Dataset::kGraphKey[];
+constexpr char LevelDBDataset::kGraphKey[];
 
-std::unique_ptr<Dataset> Dataset::Create(const std::string& dataset_path) {
+std::unique_ptr<LevelDBDataset> LevelDBDataset::Create(
+    const std::string& dataset_path) {
   leveldb::DB* db;
   leveldb::Status status =
       leveldb::DB::Open(leveldb::Options(), dataset_path, &db);
@@ -36,12 +37,14 @@ std::unique_ptr<Dataset> Dataset::Create(const std::string& dataset_path) {
     return nullptr;
   }
 
-  return absl::make_unique<Dataset>(absl::WrapUnique(db));
+  return absl::make_unique<LevelDBDataset>(absl::WrapUnique(db));
 }
 
-Dataset::Dataset(std::unique_ptr<leveldb::DB> db) { db_ = std::move(db); }
+LevelDBDataset::LevelDBDataset(std::unique_ptr<leveldb::DB> db) {
+  db_ = std::move(db);
+}
 
-bool Dataset::GetGraph(StreetLearnGraph* graph) const {
+bool LevelDBDataset::GetGraph(StreetLearnGraph* graph) const {
   std::string graph_proto_string;
   if (GetValue(kGraphKey, &graph_proto_string)) {
     return graph->ParseFromString(graph_proto_string);
@@ -49,7 +52,7 @@ bool Dataset::GetGraph(StreetLearnGraph* graph) const {
   return false;
 }
 
-bool Dataset::GetPano(absl::string_view pano_id, Pano* pano) const {
+bool LevelDBDataset::GetPano(absl::string_view pano_id, Pano* pano) const {
   std::string pano_proto_string;
   if (GetValue(pano_id, &pano_proto_string)) {
     return pano->ParseFromString(pano_proto_string);
@@ -58,7 +61,7 @@ bool Dataset::GetPano(absl::string_view pano_id, Pano* pano) const {
   return false;
 }
 
-bool Dataset::GetValue(absl::string_view key, std::string* value) const {
+bool LevelDBDataset::GetValue(absl::string_view key, std::string* value) const {
   leveldb::Status status =
       db_->Get(leveldb::ReadOptions(), std::string(key), value);
   if (!status.ok()) {

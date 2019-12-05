@@ -18,10 +18,10 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-
 #include "absl/strings/str_cat.h"
 #include "absl/types/optional.h"
 #include "streetlearn/engine/color.h"
+#include "streetlearn/engine/dataset_factory.h"
 #include "streetlearn/engine/graph_image_cache.h"
 #include "streetlearn/engine/math_util.h"
 #include "streetlearn/engine/pano_graph.h"
@@ -51,10 +51,10 @@ static const auto* const kHighlightedPanos = new std::map<std::string, Color>{
 
 class GraphRendererTest : public testing::Test {
  public:
-  static void SetUpTestCase() { ASSERT_TRUE(TestDataset::Generate()); }
+  static void SetUpTestSuite() { ASSERT_TRUE(TestDataset::Generate()); }
 
   void SetUp() override {
-    dataset_ = Dataset::Create(TestDataset::GetPath());
+    dataset_ = CreateDataset(TestDataset::GetPath());
     ASSERT_TRUE(dataset_ != nullptr);
 
     pano_graph_ = absl::make_unique<PanoGraph>(

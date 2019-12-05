@@ -20,6 +20,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "streetlearn/engine/cairo_util.h"
+#include "streetlearn/engine/dataset_factory.h"
 #include "streetlearn/engine/pano_graph.h"
 #include "streetlearn/engine/test_dataset.h"
 #include "streetlearn/engine/test_utils.h"
@@ -37,10 +38,10 @@ constexpr char kTestFilePath[] = "engine/test_data/";
 
 class GraphImageCacheTest : public testing::Test {
  public:
-  static void SetUpTestCase() { ASSERT_TRUE(TestDataset::Generate()); }
+  static void SetUpTestSuite() { ASSERT_TRUE(TestDataset::Generate()); }
 
   void SetUp() {
-    dataset_ = Dataset::Create(TestDataset::GetPath());
+    dataset_ = CreateDataset(TestDataset::GetPath());
     ASSERT_TRUE(dataset_ != nullptr);
 
     pano_graph_ = absl::make_unique<PanoGraph>(

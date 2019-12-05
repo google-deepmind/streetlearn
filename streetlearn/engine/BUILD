@@ -79,10 +79,34 @@ cc_library(
 
 cc_library(
     name = "dataset",
-    srcs = ["dataset.cc"],
     hdrs = ["dataset.h"],
     visibility = ["//visibility:public"],
     deps = [
+        "//streetlearn/proto:streetlearn_cc_pb2",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "dataset_factory",
+    srcs = ["dataset_factory.cc"],
+    hdrs = ["dataset_factory.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":dataset",
+        ":leveldb_dataset",
+        ":logging",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "leveldb_dataset",
+    srcs = ["leveldb_dataset.cc"],
+    hdrs = ["leveldb_dataset.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":dataset",
         ":logging",
         "//streetlearn/proto:streetlearn_cc_pb2",
         "@com_google_absl//absl/memory",
@@ -98,6 +122,7 @@ cc_library(
     deps = [
         ":bitmap_util",
         ":dataset",
+        ":dataset_factory",
         ":graph_renderer",
         ":logging",
         ":math",
@@ -139,7 +164,6 @@ cc_library(
     deps = [
         ":image",
         "//streetlearn/proto:streetlearn_cc_pb2",
-        "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/types:span",
         "@opencv",
     ],
@@ -301,14 +325,12 @@ cc_library(
     srcs = ["test_dataset.cc"],
     hdrs = ["test_dataset.h"],
     deps = [
-        ":dataset",
         ":image",
-        ":logging",
+        ":leveldb_dataset",
         ":pano_graph_node",
         "//streetlearn/proto:streetlearn_cc_pb2",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/time",
         "@com_google_googletest//:gtest",
         "@com_google_leveldb//:leveldb",
         "@opencv",
@@ -350,11 +372,11 @@ cc_test(
 )
 
 cc_test(
-    name = "dataset_test",
+    name = "leveldb_dataset_test",
     size = "small",
-    srcs = ["dataset_test.cc"],
+    srcs = ["leveldb_dataset_test.cc"],
     deps = [
-        ":dataset",
+        ":leveldb_dataset",
         "//streetlearn/proto:streetlearn_cc_pb2",
         "@com_google_absl//absl/memory",
         "@com_google_googletest//:gtest",
@@ -381,6 +403,7 @@ cc_test(
         "test_data/graph_test_observer.png",
     ],
     deps = [
+        ":dataset_factory",
         ":math",
         ":pano_calculations",
         ":streetlearn_engine",
@@ -400,7 +423,6 @@ cc_test(
     deps = [
         ":pano_projection",
         ":test_dataset",
-        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@opencv",
@@ -412,6 +434,7 @@ cc_test(
     size = "small",
     srcs = ["metadata_cache_test.cc"],
     deps = [
+        ":dataset_factory",
         ":metadata_cache",
         ":test_dataset",
         "//streetlearn/proto:streetlearn_cc_pb2",
@@ -426,13 +449,12 @@ cc_test(
     size = "small",
     srcs = ["node_cache_test.cc"],
     deps = [
+        ":dataset_factory",
         ":node_cache",
-        ":pano_fetcher",
         ":test_dataset",
         "//streetlearn/proto:streetlearn_cc_pb2",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
         "@com_google_googletest//:gtest",
@@ -445,12 +467,12 @@ cc_test(
     size = "small",
     srcs = ["pano_fetcher_test.cc"],
     deps = [
+        ":dataset_factory",
         ":pano_fetcher",
         ":pano_graph_node",
         ":test_dataset",
         "//streetlearn/proto:streetlearn_cc_pb2",
         "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
         "@com_google_googletest//:gtest",
@@ -463,7 +485,6 @@ cc_test(
     srcs = ["pano_renderer_test.cc"],
     deps = [
         ":pano_graph",
-        ":pano_graph_node",
         ":pano_renderer",
         ":test_dataset",
         "@com_google_googletest//:gtest",
@@ -477,8 +498,6 @@ cc_test(
     srcs = ["pano_calculations_test.cc"],
     deps = [
         ":pano_calculations",
-        ":pano_graph_node",
-        ":test_dataset",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -489,6 +508,7 @@ cc_test(
     size = "small",
     srcs = ["pano_graph_test.cc"],
     deps = [
+        ":dataset_factory",
         ":pano_graph",
         ":test_dataset",
         "//streetlearn/proto:streetlearn_cc_pb2",
@@ -521,7 +541,6 @@ cc_test(
         ":math",
         ":test_dataset",
         "//streetlearn/proto:streetlearn_cc_pb2",
-        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
         "@com_google_s2geometry//:s2",
@@ -538,6 +557,7 @@ cc_test(
     ],
     deps = [
         ":cairo_util",
+        ":dataset_factory",
         ":graph_image_cache",
         ":math",
         ":pano_graph",
@@ -567,6 +587,7 @@ cc_test(
     features = ["-use_header_modules"],
     deps = [
         ":color",
+        ":dataset_factory",
         ":graph_image_cache",
         ":graph_renderer",
         ":math",
@@ -577,6 +598,16 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:optional",
         "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "cairo_util_test",
+    srcs = ["cairo_util_test.cc"],
+    deps = [
+        ":cairo_util",
+        "@cairo",
         "@com_google_googletest//:gtest_main",
     ],
 )

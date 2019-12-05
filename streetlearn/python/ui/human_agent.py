@@ -38,6 +38,7 @@ from streetlearn.python.environment import streetlearn
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('width', 400, 'Observation and map width.')
 flags.DEFINE_integer('height', 400, 'Observation and map height.')
+flags.DEFINE_integer('field_of_view', 60, 'Field of view.')
 flags.DEFINE_integer('graph_zoom', 1, 'Zoom level.')
 flags.DEFINE_integer('width_text', 300, 'Text width.')
 flags.DEFINE_integer('font_size', 30, 'Font size.')
@@ -205,6 +206,7 @@ def loop(env, screen, x_max, y_max, subsampling=None, font=None):
 def main(argv):
   config = {'width': FLAGS.width,
             'height': FLAGS.height,
+            'field_of_view': FLAGS.field_of_view,
             'graph_width': FLAGS.width,
             'graph_height': FLAGS.height,
             'graph_zoom': FLAGS.graph_zoom,

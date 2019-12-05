@@ -29,8 +29,10 @@ import functools
 from six.moves import range
 import sonnet as snt
 import tensorflow as tf
+from tensorflow.contrib import framework as contrib_framework
+from tensorflow.contrib import rnn as contrib_rnn
 
-nest = tf.contrib.framework.nest
+nest = contrib_framework.nest
 
 AgentOutput = collections.namedtuple('AgentOutput',
                                      'action policy_logits baseline')
@@ -80,7 +82,7 @@ class PlainAgent(snt.RNNCore):
 
     with self._enter_variable_scope():
       tf.logging.info('LSTM core with %d hiddens', self._lstm_num_hiddens)
-      self._core = tf.contrib.rnn.LSTMBlockCell(self._lstm_num_hiddens)
+      self._core = contrib_rnn.LSTMBlockCell(self._lstm_num_hiddens)
 
   def initial_state(self, batch_size):
     """Return initial state with zeros, for a given batch size and data type."""

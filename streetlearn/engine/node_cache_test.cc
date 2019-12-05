@@ -27,6 +27,7 @@
 #include "absl/synchronization/blocking_counter.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/synchronization/notification.h"
+#include "streetlearn/engine/dataset_factory.h"
 #include "streetlearn/engine/test_dataset.h"
 
 namespace streetlearn {
@@ -36,10 +37,10 @@ constexpr int kThreadCount = 8;
 
 class CacheTest : public ::testing::Test {
  public:
-  static void SetUpTestCase() { ASSERT_TRUE(TestDataset::Generate()); }
+  static void SetUpTestSuite() { ASSERT_TRUE(TestDataset::Generate()); }
 
   CacheTest()
-      : dataset_(Dataset::Create(TestDataset::GetPath())),
+      : dataset_(CreateDataset(TestDataset::GetPath())),
         node_cache_(dataset_.get(), kThreadCount, TestDataset::kMaxCacheSize) {}
 
   void LoadPano(const std::string& pano_id) {
@@ -55,7 +56,7 @@ class CacheTest : public ::testing::Test {
   }
 
   const PanoGraphNode* GetNode(const std::string& pano_id)
-      LOCKS_EXCLUDED(mutex_) {
+      ABSL_LOCKS_EXCLUDED(mutex_) {
     absl::ReaderMutexLock lock(&mutex_);
     return loaded_panos_.find(pano_id) != loaded_panos_.end()
                ? loaded_panos_[pano_id]
@@ -73,7 +74,7 @@ class CacheTest : public ::testing::Test {
   void WaitForAll() { blockingCounter_->Wait(); }
 
  private:
-  void PanoLoaded(const PanoGraphNode* node) LOCKS_EXCLUDED(mutex_) {
+  void PanoLoaded(const PanoGraphNode* node) ABSL_LOCKS_EXCLUDED(mutex_) {
     if (node != nullptr) {
       absl::WriterMutexLock lock(&mutex_);
       loaded_panos_[node->id()] = node;
@@ -90,7 +91,7 @@ class CacheTest : public ::testing::Test {
   absl::Mutex mutex_;
   NodeCache node_cache_;
   absl::flat_hash_map<std::string, const PanoGraphNode*> loaded_panos_
-      GUARDED_BY(mutex_);
+      ABSL_GUARDED_BY(mutex_);
   std::unique_ptr<absl::Notification> notification_;
   std::unique_ptr<absl::BlockingCounter> blockingCounter_;
 };

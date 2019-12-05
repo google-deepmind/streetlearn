@@ -57,7 +57,7 @@ setup(
     """,
     url='https://github.com/deepmind/streetlearn',
     author='The StreetLearn Team at DeepMind',
-    author_email='streetlearn-dev@google.com',
+    author_email='streetlearn@google.com',
     license='Apache 2.0',
 
     classifiers=[

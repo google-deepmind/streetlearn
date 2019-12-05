@@ -59,21 +59,22 @@ class NodeCache {
   // true if the pano is already in the cache and available immediately and
   // false if the fetcher has been used.
   bool Lookup(const std::string& pano_id, LoadCallback callback)
-      LOCKS_EXCLUDED(mutex_);
+      ABSL_LOCKS_EXCLUDED(mutex_);
 
   // Called by the fetcher when panos are loaded.
   void Insert(const std::string& pano_id,
-              std::shared_ptr<const PanoGraphNode> node) LOCKS_EXCLUDED(mutex_);
+              std::shared_ptr<const PanoGraphNode> node)
+      ABSL_LOCKS_EXCLUDED(mutex_);
 
   // Cancel any outstanding fetches.
-  void CancelPendingFetches() LOCKS_EXCLUDED(mutex_);
+  void CancelPendingFetches() ABSL_LOCKS_EXCLUDED(mutex_);
 
  private:
   // Updates the cache with the give node and returns any callbacks required.
   ABSL_MUST_USE_RESULT
   std::list<LoadCallback> InsertImpl(const std::string& pano_id,
                                      std::shared_ptr<const PanoGraphNode> node)
-      LOCKS_EXCLUDED(mutex_);
+      ABSL_LOCKS_EXCLUDED(mutex_);
 
   // Remove and return any callbacks that are required for the given pano.
   ABSL_MUST_USE_RESULT
@@ -82,7 +83,7 @@ class NodeCache {
   // Run the callbacks provided.
   void RunCallbacks(const std::list<LoadCallback>& callbacks,
                     const std::shared_ptr<const PanoGraphNode>& node)
-      LOCKS_EXCLUDED(mutex_);
+      ABSL_LOCKS_EXCLUDED(mutex_);
 
   // An entry in the LRU list the cache maintains.
   struct CacheEntry {
@@ -99,11 +100,11 @@ class NodeCache {
 
   // Store cache entries. The list is sorted by recency of entry lookups, with
   // the most recent entry at the front.
-  std::list<CacheEntry> cache_list_ GUARDED_BY(mutex_);
+  std::list<CacheEntry> cache_list_ ABSL_GUARDED_BY(mutex_);
 
   // Store lookup from key to entry in the cache list.
   absl::flat_hash_map<std::string, std::list<CacheEntry>::iterator>
-      cache_lookup_ GUARDED_BY(mutex_);
+      cache_lookup_ ABSL_GUARDED_BY(mutex_);
 
   // Client callbacks when nodes become available.
   absl::flat_hash_map<std::string, std::list<LoadCallback>> callbacks_;

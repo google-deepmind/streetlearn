@@ -21,6 +21,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/strings/str_cat.h"
+#include "streetlearn/engine/dataset_factory.h"
 #include "streetlearn/engine/test_dataset.h"
 
 namespace streetlearn {
@@ -31,10 +32,10 @@ using ::testing::Optional;
 
 class PanoGraphTest : public ::testing::Test {
  public:
-  static void SetUpTestCase() { ASSERT_TRUE(TestDataset::Generate()); }
+  static void SetUpTestSuite() { ASSERT_TRUE(TestDataset::Generate()); }
 
   void SetUp() {
-    dataset_ = Dataset::Create(TestDataset::GetPath());
+    dataset_ = CreateDataset(TestDataset::GetPath());
     ASSERT_TRUE(dataset_ != nullptr);
   }
 
@@ -82,7 +83,7 @@ void TestGraph(PanoGraph* pano_graph, const std::string& root) {
 TEST(StreetLearn, PanoGraphInitFailureTest) {
   ASSERT_TRUE(TestDataset::GenerateInvalid());
   std::unique_ptr<Dataset> invalid_dataset =
-      Dataset::Create(TestDataset::GetInvalidDatasetPath());
+      CreateDataset(TestDataset::GetInvalidDatasetPath());
   ASSERT_TRUE(invalid_dataset != nullptr);
 
   PanoGraph pano_graph(TestDataset::kMaxGraphDepth, TestDataset::kMaxCacheSize,

@@ -50,8 +50,10 @@ from streetlearn.python.scalable_agent import py_process
 from streetlearn.python.scalable_agent import vtrace
 from streetlearn.python.environment import default_config
 from streetlearn.python.environment import streetlearn
+from tensorflow.contrib import framework as contrib_framework
+from tensorflow.contrib import staging as contrib_staging
 
-nest = tf.contrib.framework.nest
+nest = contrib_framework.nest
 
 flags = tf.app.flags
 FLAGS = tf.app.flags.FLAGS
@@ -289,30 +291,27 @@ class StreetLearnImpalaAdapter(streetlearn.StreetLearn):
   def _tensor_specs(method_name, unused_kwargs, constructor_kwargs):
     """Returns a nest of `TensorSpec` with the method's output specification."""
     observation_spec = [
-        tf.contrib.framework.TensorSpec(
-            [FLAGS.height, FLAGS.width, 3], tf.uint8),
-        tf.contrib.framework.TensorSpec(
-            [FLAGS.graph_height, FLAGS.graph_width, 3], tf.uint8),
-        tf.contrib.framework.TensorSpec(
-            [2,], tf.float64),
-        tf.contrib.framework.TensorSpec(
-            [2,], tf.float64),
-        tf.contrib.framework.TensorSpec(
-            [], tf.float64),
-        tf.contrib.framework.TensorSpec(
-            [], tf.uint8),
-        tf.contrib.framework.TensorSpec(
-            [], tf.int32),
-        tf.contrib.framework.TensorSpec(
-            [], tf.int32),
+        contrib_framework.TensorSpec([FLAGS.height, FLAGS.width, 3], tf.uint8),
+        contrib_framework.TensorSpec([FLAGS.graph_height, FLAGS.graph_width, 3],
+                                     tf.uint8),
+        contrib_framework.TensorSpec([
+            2,
+        ], tf.float64),
+        contrib_framework.TensorSpec([
+            2,
+        ], tf.float64),
+        contrib_framework.TensorSpec([], tf.float64),
+        contrib_framework.TensorSpec([], tf.uint8),
+        contrib_framework.TensorSpec([], tf.int32),
+        contrib_framework.TensorSpec([], tf.int32),
     ]
 
     if method_name == 'initial':
       return observation_spec
     elif method_name == 'step':
       return (
-          tf.contrib.framework.TensorSpec([], tf.float32),
-          tf.contrib.framework.TensorSpec([], tf.bool),
+          contrib_framework.TensorSpec([], tf.float32),
+          contrib_framework.TensorSpec([], tf.bool),
           observation_spec,
       )
 
@@ -780,9 +779,8 @@ def train(action_set, level_names):
         # the GPU while we're performing a training step. This adds up to 1 step
         # policy lag.
         flattened_output = nest.flatten(dequeued)
-        area = tf.contrib.staging.StagingArea(
-            [t.dtype for t in flattened_output],
-            [t.shape for t in flattened_output])
+        area = contrib_staging.StagingArea([t.dtype for t in flattened_output],
+                                           [t.shape for t in flattened_output])
         stage_op = area.put(flattened_output)
 
         data_from_actors = nest.pack_sequence_as(structure, area.get())

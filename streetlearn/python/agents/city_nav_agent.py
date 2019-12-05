@@ -26,6 +26,7 @@ import sonnet as snt
 
 import streetlearn.python.agents.goal_nav_agent as goal_nav_agent
 import streetlearn.python.agents.locale_pathway as locale_pathway
+from tensorflow.contrib import rnn as contrib_rnn
 
 
 class CityNavAgent(goal_nav_agent.GoalNavAgent):
@@ -113,8 +114,8 @@ class CityNavAgent(goal_nav_agent.GoalNavAgent):
     with self._enter_variable_scope():
       # Recurrent policy LSTM core of the agent.
       tf.logging.info('LSTM core with %d hiddens', policy_lstm_num_hiddens)
-      self._policy_lstm = tf.contrib.rnn.LSTMBlockCell(policy_lstm_num_hiddens,
-                                                       name="policy_lstm")
+      self._policy_lstm = contrib_rnn.LSTMBlockCell(
+          policy_lstm_num_hiddens, name="policy_lstm")
       # Add an optional bottleneck after the global LSTM
       if locale_bottleneck_num_hiddens > 0:
         self._locale_bottleneck = snt.nets.MLP(

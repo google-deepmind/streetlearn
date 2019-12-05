@@ -20,6 +20,7 @@
 #include "absl/hash/hash.h"
 #include "absl/memory/memory.h"
 #include "streetlearn/engine/bitmap_util.h"
+#include "streetlearn/engine/dataset_factory.h"
 #include "streetlearn/engine/math_util.h"
 
 namespace streetlearn {
@@ -48,7 +49,7 @@ std::unique_ptr<StreetLearnEngine> StreetLearnEngine::Create(
     const std::string& data_path, int width, int height, int graph_width,
     int graph_height, int status_height, int field_of_view, int min_graph_depth,
     int max_graph_depth, int max_cache_size) {
-  auto dataset = Dataset::Create(data_path);
+  auto dataset = CreateDataset(data_path);
   if (!dataset) {
     return nullptr;
   }

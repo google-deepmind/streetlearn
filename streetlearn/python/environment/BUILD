@@ -42,5 +42,6 @@ py_library(
     deps = [
         "//streetlearn/engine/python:color",
         "//streetlearn/engine/python:streetlearn_engine",
+        "//streetlearn/proto:streetlearn_py_pb2",
     ],
 )

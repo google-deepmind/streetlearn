@@ -31,8 +31,9 @@ import sonnet as snt
 import tensorflow as tf
 
 import streetlearn.python.agents.locale_pathway as locale_pathway
+from tensorflow.contrib import framework as contrib_framework
 
-nest = tf.contrib.framework.nest
+nest = contrib_framework.nest
 
 AgentOutput = collections.namedtuple(
     "AgentOutput", "action policy_logits baseline heading xy target_xy")

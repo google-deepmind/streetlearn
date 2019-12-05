@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "streetlearn/engine/dataset.h"
+#include "streetlearn/engine/leveldb_dataset.h"
 
 #include <cstdint>
 #include <string>
@@ -79,10 +79,11 @@ TEST(DatasetTest, TestAccessWithNonExistingKeys) {
 
   EXPECT_CALL(*mock_leveldb, Get(_, ::leveldb::Slice(kTestPanoId), _))
       .WillOnce(Return(leveldb::Status::NotFound("not found")));
-  EXPECT_CALL(*mock_leveldb, Get(_, ::leveldb::Slice(Dataset::kGraphKey), _))
+  EXPECT_CALL(*mock_leveldb,
+              Get(_, ::leveldb::Slice(LevelDBDataset::kGraphKey), _))
       .WillOnce(Return(leveldb::Status::NotFound("not found")));
 
-  Dataset dataset(std::move(mock_leveldb));
+  LevelDBDataset dataset(std::move(mock_leveldb));
 
   StreetLearnGraph graph;
   EXPECT_FALSE(dataset.GetGraph(&graph));
@@ -106,11 +107,12 @@ TEST(DatasetTest, TestAccessWithExistingKeys) {
   EXPECT_CALL(*mock_leveldb, Get(_, ::leveldb::Slice(kTestPanoId), _))
       .WillOnce(DoAll(SetArgPointee<2>(test_pano_string),
                       Return(leveldb::Status::OK())));
-  EXPECT_CALL(*mock_leveldb, Get(_, ::leveldb::Slice(Dataset::kGraphKey), _))
+  EXPECT_CALL(*mock_leveldb,
+              Get(_, ::leveldb::Slice(LevelDBDataset::kGraphKey), _))
       .WillOnce(DoAll(SetArgPointee<2>(test_graph_string),
                       Return(leveldb::Status::OK())));
 
-  Dataset dataset(std::move(mock_leveldb));
+  LevelDBDataset dataset(std::move(mock_leveldb));
 
   StreetLearnGraph graph;
   EXPECT_TRUE(dataset.GetGraph(&graph));

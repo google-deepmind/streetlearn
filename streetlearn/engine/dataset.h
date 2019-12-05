@@ -1,4 +1,4 @@
-// Copyright 2018 Google LLC
+// Copyright 2019 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,45 +15,25 @@
 #ifndef THIRD_PARTY_STREETLEARN_ENGINE_DATASET_H_
 #define THIRD_PARTY_STREETLEARN_ENGINE_DATASET_H_
 
-#include <memory>
-#include <string>
-
 #include "absl/strings/string_view.h"
-#include "leveldb/db.h"
 #include "streetlearn/proto/streetlearn.pb.h"
 
 namespace streetlearn {
 
-// Dataset is a wrapper around a StreetLearn dataset, that currently resides in
-// LevelDB files.
+// Interface class for reading datasets that may be stored in different formats
+// or on different mediums. Implmenentations of the Dataset interface must
+// support instantiation using the DatasetFactory.
 class Dataset {
  public:
-  // The key used to access the connectivity graph in the underlying database.
-  static constexpr char kGraphKey[] = "panos_connectivity";
+  virtual ~Dataset() = default;
 
-  // Create a Dataset instance that is initialised to use the levelDB database
-  // at `dataset_path` on the filesystem.
-  static std::unique_ptr<Dataset> Create(const std::string& dataset_path);
+  // Gets the connectivity graph from the dataset. Returns false if
+  // unsuccessful.
+  virtual bool GetGraph(StreetLearnGraph* graph) const = 0;
 
-  // Construct Dataset using an already open levelDB instance. Only for testing
-  // purposes. Regular users should use the Create factory method.
-  Dataset(std::unique_ptr<leveldb::DB> db);
-
-  Dataset(const Dataset&) = delete;
-  Dataset& operator=(const Dataset&) = delete;
-
-  // Get the connectivity graph from the dataset.
-  bool GetGraph(StreetLearnGraph* graph) const;
-
-  // Get a Pano associated with `pano_id` from the dataset. If the `pano_id` is
-  // unknown, the function returns false.
-  bool GetPano(absl::string_view pano_id, Pano* pano) const;
-
- private:
-  // Try to get a string value stored in the dataset under `key`.
-  bool GetValue(absl::string_view key, std::string* value) const;
-
-  std::unique_ptr<leveldb::DB> db_;
+  // Gets a Pano associated with `pano_id` from the dataset. Returns false if
+  // the `pano_id` is unknown.
+  virtual bool GetPano(absl::string_view pano_id, Pano* pano) const = 0;
 };
 
 }  // namespace streetlearn

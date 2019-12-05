@@ -3,25 +3,12 @@
 ## Overview
 
 This repository contains an implementation of the
-[**StreetLearn**](http://streetlearn.cc) environment for training navigation
-agents as well as code for implementing the agents used in the NeurIPS 2018
-paper on
-["Learning to Navigate in Cities Without a Map"](http://papers.nips.cc/paper/7509-learning-to-navigate-in-cities-without-a-map).
-The StreetLearn environment relies on panorama images from
+[**StreetLearn**](http://streetlearn.cc) C++ engine and Python environment for training navigation agents in real-world photographic street environments, as well as code for implementing the agents used in [1] ["Learning to Navigate in Cities Without a Map"](http://papers.nips.cc/paper/7509-learning-to-navigate-in-cities-without-a-map) (NeurIPS 2018). This environment was also used in two follow-up papers: [2] ["Cross-View Policy Learning for Street Navigation"](https://arxiv.org/pdf/1906.05930) (ICCV 2019) and [3] ["Learning to follow directions in Street View"](https://arxiv.org/pdf/1903.00401) (AAAI 2020), as well as in technical report [4] ["The StreetLearn Environment and Dataset"](https://arxiv.org/pdf/1903.01292). The StreetLearn environment relies on panorama images from
 [Google Street View](https://maps.google.com) and provides an interface for
 moving a first-person view agent inside the Street View graph. This is not an
-officially supported Google product.
+officially supported Google product. Please cite papers [1] and [4] if you use the code from this repository in your work.
 
-For a detailed description of the architecture please read our paper. Please
-cite the paper if you use the code from this repository in your work.
-
-Our paper also provides a detailed description of how to train and implement
-navigation agents in the StreetLearn environment by using a TensorFlow
-implementation of "Importance Weighted Actor-Learner Architectures", published
-in Espeholt, Soyer, Munos et al. (2018) "IMPALA: Scalable Distributed Deep-RL
-with Importance Weighted Actor-Learner
-Architectures"(https://arxiv.org/abs/1802.01561). The generic agent and trainer
-code have been published by Lasse Espeholt under an Apache license at:
+Our papers [1], [2] and [3] also provide a detailed description of how to train and implement navigation agents in the StreetLearn environment by using a TensorFlow implementation of "Importance Weighted Actor-Learner Architectures", published in Espeholt, Soyer, Munos et al. (2018) ["IMPALA: Scalable Distributed Deep-RL with Importance Weighted Actor-Learner Architectures"](https://arxiv.org/abs/1802.01561)). The generic agent and trainer code have been published by Lasse Espeholt under an Apache license at:
 [https://github.com/deepmind/scalable_agent](https://github.com/deepmind/scalable_agent).
 
 ### Bibtex
@@ -32,6 +19,13 @@ code have been published by Lasse Espeholt under an Apache license at:
   author={Mirowski, Piotr and Grimes, Matthew Koichi and Malinowski, Mateusz and Hermann, Karl Moritz and Anderson, Keith and Teplyashin, Denis and Simonyan, Karen and Kavukcuoglu, Koray and Zisserman, Andrew and Hadsell, Raia},
   booktitle={Neural Information Processing Systems (NeurIPS)},
   year={2018}
+}
+
+@article{mirowski2019streetlearn,
+  title={The StreetLearn Environment and Dataset},
+  author={Mirowski, Piotr and Banki-Horvath, Andras and Anderson, Keith and Teplyashin, Denis and Hermann, Karl Moritz and Malinowski, Mateusz and Grimes, Matthew Koichi and Simonyan, Karen and Kavukcuoglu, Koray and Zisserman, Andrew and others},
+  journal={arXiv preprint arXiv:1903.01292},
+  year={2019}
 }
 ```
 
@@ -230,20 +224,27 @@ shown from two panoramas away from any terminal node in the graph.
 
 ### Obtaining the StreetLearn dataset
 
-You can request the StreetLearn dataset on the
-[StreetLearn project website](https://sites.google.com/view/streetlearn/).
+You can request the StreetLearn dataset on the [StreetLearn project website](https://sites.google.com/view/streetlearn/). The following datasets are currently distributed:
+* 56k Manhattan panoramas, used [1], [2], [3] and [4]:
+** **manhattan_highres** (size 1632 x 408)
+** **manhattan_lowres** (size 408 x 204)
+* 58k Pittsburgh panoramas, used in [2], [3] and [4]:
+** **pittsburgh_highres** (size 1632 x 408)
+** **pittsburgh_lowres** (size 408 x 204)
+* 29k Manhattan panoramas used in [5] ["TOUCHDOWN: Natural Language Navigation and Spatial Reasoning in Visual Street Environments"](http://openaccess.thecvf.com/content_CVPR_2019/papers/Chen_TOUCHDOWN_Natural_Language_Navigation_and_Spatial_Reasoning_in_Visual_Street_CVPR_2019_paper.pdf) (Chen, Suhr, Misra et al, ICCV 2019), with accompanying code at [https://github.com/lil-lab/touchdown](https://github.com/lil-lab/touchdown):
+** **touchdown_manhattan_highres** (size 3000 x 1500)
+** **touchdown_manhattan_lowres** (downsampled to 500 x 250)
+
+The downsampled version of the panoramas can be used when the RGB inputs are small (e.g., 84 x 84), to save on panorama image loading and projection time.
 
 ## Using the StreetLearn environment code
 
-The Python StreetLearn environment follows the specifications from
-[OpenAI Gym](https://gym.openai.com/docs/). The call to function
-**step(action)** returns: * **observation** (tuple of observations requested at
-construction), * **reward** (a float with the current reward of the agent), *
-**done** (boolean indicating whether the episode has ended) * and **info** (a
-dictionary of environment state variables). After creating the environment, it
-is initialised by calling function **reset()**. If the flag auto_reset is set to
-True at construction, **reset()** will be called automatically every time that
-an episode ends.
+The Python StreetLearn environment follows the specifications from [OpenAI Gym](https://gym.openai.com/docs/). The call to function **step(action)** returns:
+* **observation** (tuple of observations requested at construction),
+* **reward** (a float with the current reward of the agent),
+* **done** (boolean indicating whether the episode has ended)
+* and **info** (a dictionary of environment state variables).
+After creating the environment, it is initialised by calling function **reset()**. If the flag auto_reset is set to True at construction, **reset()** will be called automatically every time that an episode ends.
 
 ### Environment Settings
 

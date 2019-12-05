@@ -24,6 +24,7 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
+#include "streetlearn/engine/dataset_factory.h"
 #include "streetlearn/engine/math_util.h"
 #include "streetlearn/engine/pano_calculations.h"
 #include "streetlearn/engine/test_dataset.h"
@@ -52,10 +53,10 @@ using ::testing::Optional;
 
 class StreetLearnEngineTest : public testing::Test {
  public:
-  static void SetUpTestCase() { ASSERT_TRUE(TestDataset::Generate()); }
+  static void SetUpTestSuite() { ASSERT_TRUE(TestDataset::Generate()); }
 
   void SetUp() override {
-    std::unique_ptr<Dataset> dataset = Dataset::Create(TestDataset::GetPath());
+    std::unique_ptr<Dataset> dataset = CreateDataset(TestDataset::GetPath());
     ASSERT_TRUE(dataset != nullptr);
 
     engine_ = absl::make_unique<StreetLearnEngine>(

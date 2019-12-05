@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "streetlearn/engine/test_dataset.h"
+
 #include "gtest/gtest.h"
 #include <opencv/cv.h>
 #include <opencv2/core/core.hpp>
@@ -21,7 +22,7 @@
 #include "absl/strings/str_cat.h"
 #include "leveldb/db.h"
 #include "leveldb/options.h"
-#include "streetlearn/engine/dataset.h"
+#include "streetlearn/engine/leveldb_dataset.h"
 
 namespace streetlearn {
 
@@ -168,7 +169,7 @@ bool TestDataset::Generate() {
     AddNeighborMetadata(i, connection);
   }
 
-  leveldb_status = db->Put(leveldb::WriteOptions(), Dataset::kGraphKey,
+  leveldb_status = db->Put(leveldb::WriteOptions(), LevelDBDataset::kGraphKey,
                            metadata.SerializeAsString());
   return leveldb_status.ok();
 }

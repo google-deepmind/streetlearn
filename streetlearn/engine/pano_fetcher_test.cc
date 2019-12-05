@@ -25,6 +25,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/synchronization/blocking_counter.h"
 #include "absl/synchronization/mutex.h"
+#include "streetlearn/engine/dataset_factory.h"
 #include "streetlearn/engine/pano_graph_node.h"
 #include "streetlearn/engine/test_dataset.h"
 
@@ -35,10 +36,10 @@ constexpr int kThreadCount = 8;
 
 class PanoFetcherTest : public ::testing::Test {
  public:
-  static void SetUpTestCase() { ASSERT_TRUE(TestDataset::Generate()); }
+  static void SetUpTestSuite() { ASSERT_TRUE(TestDataset::Generate()); }
 
   void SetUp() {
-    dataset_ = Dataset::Create(TestDataset::GetPath());
+    dataset_ = CreateDataset(TestDataset::GetPath());
     ASSERT_TRUE(dataset_ != nullptr);
   }
 
@@ -55,7 +56,7 @@ class FetchTest {
   // the last fetch to test cancellation.
   void PanoLoaded(absl::string_view pano_file,
                   std::shared_ptr<const PanoGraphNode> pano)
-      LOCKS_EXCLUDED(mutex_) {
+      ABSL_LOCKS_EXCLUDED(mutex_) {
     absl::MutexLock scope_lock(&mutex_);
     if (pano != nullptr) {
       loaded_.push_back(std::move(pano));
@@ -63,13 +64,13 @@ class FetchTest {
     counter_.DecrementCount();
   }
 
-  int LoadedCount() LOCKS_EXCLUDED(mutex_) {
+  int LoadedCount() ABSL_LOCKS_EXCLUDED(mutex_) {
     absl::MutexLock scope_lock(&mutex_);
     return loaded_.size();
   }
 
   bool PanoWithID(const std::string& pano_id, const PanoGraphNode* pano_node)
-      LOCKS_EXCLUDED(mutex_) {
+      ABSL_LOCKS_EXCLUDED(mutex_) {
     absl::MutexLock scope_lock(&mutex_);
     auto it = std::find_if(
         loaded_.begin(), loaded_.end(),
@@ -99,7 +100,8 @@ class FetchTest {
   }
 
  private:
-  std::vector<std::shared_ptr<const PanoGraphNode>> loaded_ GUARDED_BY(mutex_);
+  std::vector<std::shared_ptr<const PanoGraphNode>> loaded_
+      ABSL_GUARDED_BY(mutex_);
   absl::BlockingCounter counter_;
   absl::Mutex mutex_;
 };

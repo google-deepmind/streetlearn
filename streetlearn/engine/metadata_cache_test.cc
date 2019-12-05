@@ -19,6 +19,7 @@
 #include "gtest/gtest.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
+#include "streetlearn/engine/dataset_factory.h"
 #include "streetlearn/engine/test_dataset.h"
 
 namespace streetlearn {
@@ -27,7 +28,7 @@ namespace {
 TEST(StreetLearn, MetadataCacheTest) {
   ASSERT_TRUE(TestDataset::Generate());
   std::unique_ptr<const Dataset> dataset =
-      Dataset::Create(TestDataset::GetPath());
+      CreateDataset(TestDataset::GetPath());
   ASSERT_TRUE(dataset != nullptr);
 
   auto metadata_cache =
@@ -92,7 +93,7 @@ TEST(StreetLearn, MetadataCacheTest) {
 TEST(StreetLearn, InvalidDataTest) {
   ASSERT_TRUE(TestDataset::GenerateInvalid());
   std::unique_ptr<const Dataset> invalid_dataset =
-      Dataset::Create(TestDataset::GetInvalidDatasetPath());
+      CreateDataset(TestDataset::GetInvalidDatasetPath());
   ASSERT_TRUE(invalid_dataset != nullptr);
 
   auto metadata_cache =
