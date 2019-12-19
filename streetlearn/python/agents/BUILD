@@ -28,4 +28,5 @@ py_library(
         "locale_pathway.py",
         "plain_agent.py",
     ],
+    srcs_version = "PY2AND3",
 )

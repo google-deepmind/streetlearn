@@ -20,8 +20,8 @@ from __future__ import print_function
 
 import collections
 
-import tensorflow as tf
 import sonnet as snt
+import tensorflow as tf
 
 # Outputs of the global city-specific pathway
 LocalePathwayOutput = collections.namedtuple(
@@ -103,7 +103,7 @@ class LocalePathway(snt.RNNCore):
           activate_final=False,
           name="target_xy_logits")
 
-  def _build(self, (embedding, target_position), state):
+  def _build(self, input_, state):
     """Connects the core into the graph.
 
     This core is designed to be used for embeddings coming from a convnet.
@@ -123,8 +123,7 @@ class LocalePathway(snt.RNNCore):
           `[batch]`).
         * `next_state` is the output of the LSTM component of the core.
     """
-
-    # Add the target to global LSTM
+    (embedding, target_position) = input_
     with tf.name_scope("targets") as scope:
       lstm_input = tf.concat([embedding, tf.cast(target_position,
                                                  dtype=tf.float32)],

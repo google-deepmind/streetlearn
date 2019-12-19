@@ -29,6 +29,18 @@
 #include "streetlearn/engine/pano_graph_node.h"
 #include "streetlearn/proto/streetlearn.pb.h"
 
+#ifdef ABSL_LOCKS_EXCLUDED
+#define STREETLEARN_LOCKS_EXCLUDED ABSL_LOCKS_EXCLUDED
+#else
+#define STREETLEARN_LOCKS_EXCLUDED LOCKS_EXCLUDED
+#endif  // ABSL_LOCKS_EXCLUDED
+
+#ifdef ABSL_GUARDED_BY
+#define STREETLEARN_GUARDED_BY ABSL_GUARDED_BY
+#else
+#define STREETLEARN_GUARDED_BY GUARDED_BY
+#endif  // ABSL_GUARDED_BY
+
 namespace streetlearn {
 
 // Class to fetch panos from disk for the LRU Cache maintained by the
@@ -51,18 +63,19 @@ class PanoFetcher {
   PanoFetcher(const Dataset* dataset, int thread_count, FetchCallback callback);
 
   // Cancels and joins all of the fetching threads.
-  ~PanoFetcher() ABSL_LOCKS_EXCLUDED(queue_mutex_);
+  ~PanoFetcher() STREETLEARN_LOCKS_EXCLUDED(queue_mutex_);
 
   // Fetch a pano synchronously by ID. Returns null if the current graph does
   // not contain a pano with the given ID.
   std::shared_ptr<const PanoGraphNode> Fetch(absl::string_view pano_id);
 
   // Fetch a pano asynchronously by ID and calls the callback when complete.
-  void FetchAsync(absl::string_view pano_id) ABSL_LOCKS_EXCLUDED(queue_mutex_);
+  void FetchAsync(absl::string_view pano_id)
+      STREETLEARN_LOCKS_EXCLUDED(queue_mutex_);
 
   // Clears the fetch queue and returns the IDs of panos cancelled.
   std::vector<std::string> CancelPendingFetches()
-      ABSL_LOCKS_EXCLUDED(queue_mutex_);
+      STREETLEARN_LOCKS_EXCLUDED(queue_mutex_);
 
  private:
   // Thread routine for loading panos.
@@ -70,7 +83,8 @@ class PanoFetcher {
 
   // Waits until a pano request is pending on the queue or shutdown has been
   // requested. Returns true when a request is pending and false on shutdown.
-  bool MonitorRequests(std::string* filename) ABSL_LOCKS_EXCLUDED(queue_mutex_);
+  bool MonitorRequests(std::string* filename)
+      STREETLEARN_LOCKS_EXCLUDED(queue_mutex_);
 
   // Dataset to read the panos.
   const Dataset* dataset_;
@@ -79,7 +93,7 @@ class PanoFetcher {
   std::vector<std::thread> threads_;
 
   // Queue for fetch requests.
-  std::deque<std::string> fetch_queue_ ABSL_GUARDED_BY(queue_mutex_);
+  std::deque<std::string> fetch_queue_ STREETLEARN_GUARDED_BY(queue_mutex_);
 
   // Fetch queue mutex.
   absl::Mutex queue_mutex_;
@@ -88,7 +102,7 @@ class PanoFetcher {
   FetchCallback callback_;
 
   // Shutdown flag to terminate fetch threads.
-  bool shutdown_ ABSL_GUARDED_BY(queue_mutex_);
+  bool shutdown_ STREETLEARN_GUARDED_BY(queue_mutex_);
 };
 
 }  // namespace streetlearn

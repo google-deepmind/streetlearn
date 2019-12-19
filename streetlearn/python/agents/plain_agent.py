@@ -27,6 +27,7 @@ import collections
 import functools
 
 from six.moves import range
+from six.moves import zip
 import sonnet as snt
 import tensorflow as tf
 from tensorflow.contrib import framework as contrib_framework

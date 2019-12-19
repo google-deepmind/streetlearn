@@ -56,7 +56,7 @@ class FetchTest {
   // the last fetch to test cancellation.
   void PanoLoaded(absl::string_view pano_file,
                   std::shared_ptr<const PanoGraphNode> pano)
-      ABSL_LOCKS_EXCLUDED(mutex_) {
+      STREETLEARN_LOCKS_EXCLUDED(mutex_) {
     absl::MutexLock scope_lock(&mutex_);
     if (pano != nullptr) {
       loaded_.push_back(std::move(pano));
@@ -64,13 +64,13 @@ class FetchTest {
     counter_.DecrementCount();
   }
 
-  int LoadedCount() ABSL_LOCKS_EXCLUDED(mutex_) {
+  int LoadedCount() STREETLEARN_LOCKS_EXCLUDED(mutex_) {
     absl::MutexLock scope_lock(&mutex_);
     return loaded_.size();
   }
 
   bool PanoWithID(const std::string& pano_id, const PanoGraphNode* pano_node)
-      ABSL_LOCKS_EXCLUDED(mutex_) {
+      STREETLEARN_LOCKS_EXCLUDED(mutex_) {
     absl::MutexLock scope_lock(&mutex_);
     auto it = std::find_if(
         loaded_.begin(), loaded_.end(),
@@ -101,7 +101,7 @@ class FetchTest {
 
  private:
   std::vector<std::shared_ptr<const PanoGraphNode>> loaded_
-      ABSL_GUARDED_BY(mutex_);
+      STREETLEARN_GUARDED_BY(mutex_);
   absl::BlockingCounter counter_;
   absl::Mutex mutex_;
 };

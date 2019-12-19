@@ -54,18 +54,16 @@ http_archive(
     sha256 = "7e87878658f2c9951a14fc64114d4958c0e65ac47530b8ac3078b2ce41b66a09",
     strip_prefix = "cairo-1.14.10",
     urls = [
-        "https://mirror.bazel.build/www.cairographics.org/releases/cairo-1.14.10.tar.xz",
         "https://www.cairographics.org/releases/cairo-1.14.10.tar.xz",
     ],
 )
 
 http_archive(
     name = "org_tensorflow",
-    sha256 = "902a6d90bb69549fe241377210aa459773459820da1333b67dcfdef37836f25f",
-    strip_prefix = "tensorflow-1.13.1",
+    sha256 = "f18e0960231b00acfed890fe0a9c73a7294f2adc64c24853f8b8b655425c9b63",
+    strip_prefix = "tensorflow-1.14.0",
     urls = [
-        "https://mirror.bazel.build/github.com/tensorflow/tensorflow/archive/v1.13.1.zip",
-        "https://github.com/tensorflow/tensorflow/archive/v1.13.1.zip",
+        "https://github.com/tensorflow/tensorflow/archive/v1.14.0.zip",
     ],
 )
 
@@ -76,6 +74,12 @@ http_archive(
     urls = [
         "https://github.com/bazelbuild/rules_closure/archive/87d24b1df8b62405de8dd059cb604fd9d4b1e395.zip",
     ],
+)
+
+http_archive(
+    name = "rules_cc",
+    strip_prefix = "rules_cc-master",
+    urls = ["https://github.com/bazelbuild/rules_cc/archive/master.zip"],
 )
 
 load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")

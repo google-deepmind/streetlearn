@@ -70,6 +70,7 @@ def loop(env, screen):
   sum_rewards = 0
   sum_rewards_at_goal = 0
   previous_goal_id = None
+  seen_pano_ids = {}
   while True:
     observation = env.observation()
     view_image = interleave(observation['view_image'],
@@ -94,6 +95,7 @@ def loop(env, screen):
     sum_rewards += reward
     if (reward > 0) and (info['current_goal_id'] is not previous_goal_id):
       sum_rewards_at_goal += reward
+      seen_pano_ids = {}
     previous_goal_id = info['current_goal_id']
     if done:
       print('Episode reward: {}'.format(sum_rewards))
@@ -110,6 +112,12 @@ def loop(env, screen):
     logging.info('Current pano: %s, next pano %s at %f',
                  current_pano_id, next_pano_id, bearing)
 
+    # Maintain the count of pano visits, in case the agent gets stuck.
+    if current_pano_id in seen_pano_ids:
+      seen_pano_ids[current_pano_id] += 1
+    else:
+      seen_pano_ids[current_pano_id] = 1
+
     # Bearing-based navigation.
     if bearing > TOL_BEARING:
       if bearing > TOL_BEARING + 2 * FLAGS.horizontal_rot:
@@ -123,6 +131,18 @@ def loop(env, screen):
         action = -FLAGS.horizontal_rot * action_spec['horizontal_rotation']
     else:
       action = action_spec['move_forward']
+
+      # Sometimes, two panos B and C are close to each other, which causes
+      # cyclic loops: A -> C -> A -> C -> A... whereas agent wants to go A -> B.
+      # There is a simple strategy to get out of that A - C loop: detect that A
+      # has been visited a large number of times in the current trajectory, then
+      # instead of moving forward A -> B and ending up in C, directly jump to B.
+      # First, we check if the agent has spent more time in a pano than required
+      # to make a full U-turn...
+      if seen_pano_ids[current_pano_id] > (180.0 / FLAGS.horizontal_rot):
+        # ... then we teleport to the desired location and turn randomly.
+        logging.info('Teleporting from %s to %s', current_pano_id, next_pano_id)
+        _ = env.goto(next_pano_id, np.random.randint(359))
 
 def main(argv):
   config = {'width': FLAGS.width,

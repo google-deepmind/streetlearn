@@ -27,8 +27,6 @@ py_binary(
     deps = [
         "//streetlearn/engine/python:streetlearn_engine",
         "//streetlearn/python/environment:environment_py",
-        "//third_party/py/absl:app",
-        "//third_party/py/absl/flags",
     ],
 )
 
@@ -39,8 +37,6 @@ py_binary(
     deps = [
         "//streetlearn/engine/python:streetlearn_engine",
         "//streetlearn/python/environment:environment_py",
-        "//third_party/py/absl:app",
-        "//third_party/py/absl/flags",
     ],
 )
 
@@ -51,8 +47,6 @@ py_binary(
     deps = [
         "//streetlearn/engine/python:streetlearn_engine",
         "//streetlearn/python/environment:environment_py",
-        "//third_party/py/absl:app",
-        "//third_party/py/absl/flags",
     ],
 )
 
@@ -63,7 +57,5 @@ py_binary(
     deps = [
         "//streetlearn/engine/python:streetlearn_engine",
         "//streetlearn/python/environment:environment_py",
-        "//third_party/py/absl:app",
-        "//third_party/py/absl/flags",
     ],
 )

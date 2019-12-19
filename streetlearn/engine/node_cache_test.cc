@@ -56,7 +56,7 @@ class CacheTest : public ::testing::Test {
   }
 
   const PanoGraphNode* GetNode(const std::string& pano_id)
-      ABSL_LOCKS_EXCLUDED(mutex_) {
+      STREETLEARN_LOCKS_EXCLUDED(mutex_) {
     absl::ReaderMutexLock lock(&mutex_);
     return loaded_panos_.find(pano_id) != loaded_panos_.end()
                ? loaded_panos_[pano_id]
@@ -74,7 +74,8 @@ class CacheTest : public ::testing::Test {
   void WaitForAll() { blockingCounter_->Wait(); }
 
  private:
-  void PanoLoaded(const PanoGraphNode* node) ABSL_LOCKS_EXCLUDED(mutex_) {
+  void PanoLoaded(const PanoGraphNode* node)
+      STREETLEARN_LOCKS_EXCLUDED(mutex_) {
     if (node != nullptr) {
       absl::WriterMutexLock lock(&mutex_);
       loaded_panos_[node->id()] = node;
@@ -91,7 +92,7 @@ class CacheTest : public ::testing::Test {
   absl::Mutex mutex_;
   NodeCache node_cache_;
   absl::flat_hash_map<std::string, const PanoGraphNode*> loaded_panos_
-      ABSL_GUARDED_BY(mutex_);
+      STREETLEARN_GUARDED_BY(mutex_);
   std::unique_ptr<absl::Notification> notification_;
   std::unique_ptr<absl::BlockingCounter> blockingCounter_;
 };

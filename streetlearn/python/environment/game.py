@@ -112,6 +112,16 @@ class Game(object):
     Args:
       streetlearn: the streetlearn environment.
     """
+    # Some datasets contain unidirectional connections: make them bidirectional.
+    for pano_id in six.iterkeys(streetlearn.graph):
+      neighbors = streetlearn.graph[pano_id]
+      for neighbor_id in neighbors:
+        neighbor_neighbors = streetlearn.graph[neighbor_id]
+        if pano_id not in neighbor_neighbors:
+          streetlearn.graph[neighbor_id].append(pano_id)
+          logging.info('Adding neighbor %s to %s to satisfy cycle',
+                       pano_id, neighbor_id)
+
     logging.info('Storing the altitudes of each pano for faster retrieval.')
     altitudes = {}
     for pano_id in six.iterkeys(streetlearn.graph):
@@ -146,7 +156,8 @@ class Game(object):
               neighbor_alt = altitudes[neighbor_id]
               if depth == 0 or abs(neighbor_alt - current_alt) < TOL_ALT:
                 queue_panos.append((neighbor_id, depth+1))
-      visited.pop(current_id)
+      if current_id in visited:
+        visited.pop(current_id)
 
       # Select only neighbors that are the closest within a tolerance cone,
       # and create extended graphs.
