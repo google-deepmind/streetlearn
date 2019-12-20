@@ -124,14 +124,21 @@ pip install wrapt
 pip install numpy
 pip install dm-sonnet
 pip install tensorflow-gpu
-pip install tensorflow-probability-gpu
 pip install pygame
 ```
 
 ### Install Bazel
 
 [This page](https://bazel.build/) describes how to install the Bazel build and
-test tool on your machine.
+test tool on your machine. We currently support Bazel versions up to 0.24.0,
+whose installation instructions are listed on [this page](https://docs.bazel.build/versions/master/install-ubuntu.html) under section `Using the binary installer` (copy-pasted below):
+
+```shell
+wget https://github.com/bazelbuild/bazel/releases/download/0.24.0/bazel-0.24.0-installer-linux-x86_64.sh
+chmod +x bazel-0.24.0-installer-linux-x86_64.sh
+./bazel-0.24.0-installer-linux-x86_64.sh  --user
+export PATH="$PATH:$HOME/bin"
+```
 
 ### Building StreetLearn
 
@@ -162,10 +169,10 @@ bazel build streetlearn/python/ui:all
 ## Running the StreetLearn human agent
 
 To run the human agent using one of the StreetLearn datasets downloaded and
-stored at **dataset_path**:
+stored at **dataset_path** (note that **dataset_path** needs to be absolute, not relative):
 
 ```shell
-bazel run streetlearn/python/ui:human_agent -- --dataset_path=<dataset path>
+bazel run streetlearn/python/ui:human_agent -- --dataset_path=<dataset_path>
 ```
 
 For help with the options of the human_agent:
@@ -177,11 +184,17 @@ bazel run streetlearn/python/ui:human_agent -- --help
 Similarly, to run the oracle agent on the courier game:
 
 ```shell
-bazel run streetlearn/python/ui:oracle_agent -- --dataset_path=<dataset path>
+bazel run streetlearn/python/ui:oracle_agent -- --dataset_path=<dataset_path>
 ```
 
 The human agent and the oracle agent show a **view_image** (on top) and a
 **graph_image** (on bottom).
+
+Note: you need to add the following line to your `.bashrc` script to avoid specifying the CLIF path each time you open a new terminal:
+
+```shell
+export CLIF_PATH=$HOME/opt
+```
 
 ### Actions available to an agent:
 
