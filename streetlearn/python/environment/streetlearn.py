@@ -24,6 +24,10 @@ Observations:
     street imagery.
   graph_image: numpy array of dimension [3, graph_height, graph_width]
     containing the map graph image.
+  view_image_hwc: numpy array of dimension [height, width, 3] containing
+    the street imagery.
+  graph_image_hwc: numpy array of dimension [graph_height, graph_width, 3]
+    containing the map graph images.
   metadata: learning_deepmind.datasets.street_learn.Pano proto
     without compressed_image.
   target_metadata: learning_deepmind.datasets.street_learn.Pano proto
@@ -38,16 +42,20 @@ from absl import logging
 import inflection
 import numpy as np
 import six
+import time
 
-from streetlearn.python.environment import observations
-from streetlearn.python.environment import default_config
+from streetlearn.engine.python import color
 from streetlearn.engine.python import streetlearn_engine
+from streetlearn.python.environment import default_config
+from streetlearn.python.environment import observations
 
 _MIN_ZOOM = 1
 _MAX_ZOOM = 32
 
+
 def _action(*entries):
   return np.array(entries, dtype=np.float)
+
 
 ACTIONS = {
     'move_forward': _action(1, 0.0, 0.0, 0.0),
@@ -77,21 +85,30 @@ ACTION_SETS = {
         ACTIONS["vertical_rotation"] * (-rotation_speed)),
 }
 
+
 def get_action_set(action_spec, rotation_speed):
   """Returns the set of StreetLearn actions for the given action_spec."""
 
   # If action_spec is a string, it should be the name of a standard action set.
-  if isinstance(action_spec, basestring):
+  if isinstance(action_spec, six.string_types):
     if action_spec not in ACTION_SETS:
       raise ValueError("Unrecognized action specification %s." % action_spec)
     else:
       return np.array(ACTION_SETS[action_spec](rotation_speed), dtype=np.float)
   raise ValueError("Action specification %s not a string." % action_spec)
 
+
+def _log_dictionary(dictionary):
+  for k, v in dictionary.items():
+    v = dictionary[k]
+    if isinstance(v, (int, float, bool, list, str)):
+      logging.info(k + ': ' + str(v))
+
+
 class StreetLearn(object):
   """The Streetlearn environment."""
 
-  def __init__(self, dataset_path, config, game):
+  def __init__(self, dataset_path, config, game, engine=None):
     """Construct the StreetLearn environment.
 
     Args:
@@ -99,18 +116,21 @@ class StreetLearn(object):
       config: dictionary containing various config settings. Will be extended
         with defaults from default_config.DEFAULT_CONFIG.
       game: an instance of Game.
+      engine: an instance of the StreetLearn engine (used when cloning an
+        environment).
     """
     assert game, "Did not provide game."
     logging.info('dataset_path:')
     logging.info(dataset_path)
     logging.info('config:')
-    logging.info(config)
+    _log_dictionary(config)
     logging.info('game:')
     logging.info(game)
     self._config = default_config.ApplyDefaults(config)
     self._seed = self._config["seed"]
     self._start_pano_id = self._config["start_pano"]
     self._zoom = self._config["graph_zoom"]
+    self._black_on_white = self._config["graph_black_on_white"]
     self._frame_cap = self._config["frame_cap"]
     self._field_of_view = self._config["field_of_view"]
     self._neighbor_resolution = self._config["neighbor_resolution"]
@@ -118,7 +138,7 @@ class StreetLearn(object):
     self._min_graph_depth = self._config["min_graph_depth"]
     self._max_graph_depth = self._config["max_graph_depth"]
     self._full_graph = self._config["full_graph"]
-    self._color_for_observer = self._config["color_for_observer"]
+    self._color_for_observer = color.Color(*self._config["color_for_observer"])
     self._action_spec = self._config["action_spec"]
     self._rotation_speed = self._config["rotation_speed"]
     self._auto_reset = self._config["auto_reset"]
@@ -134,18 +154,32 @@ class StreetLearn(object):
     self._current_pano_id = None
     self._episode_id = -1
     self._frame_count = 0
+    self._prev_reset = time.time()
 
-    self._engine = streetlearn_engine.StreetLearnEngine.Create(
-        dataset_path,
-        width=self._config["width"],
-        height=self._config["height"],
-        graph_width=self._config["graph_width"],
-        graph_height=self._config["graph_height"],
-        status_height=self._config["status_height"],
-        field_of_view=self._field_of_view,
-        min_graph_depth=self._min_graph_depth,
-        max_graph_depth=self._max_graph_depth,
-        max_cache_size=self._config["max_cache_size"])
+    if engine:
+      logging.info("Cloning an existing StreetLearnEngine.")
+      self._engine = engine.Clone(
+          width=self._config["width"],
+          height=self._config["height"],
+          graph_width=self._config["graph_width"],
+          graph_height=self._config["graph_height"],
+          status_height=self._config["status_height"],
+          field_of_view=self._field_of_view,
+          min_graph_depth=self._min_graph_depth,
+          max_graph_depth=self._max_graph_depth)
+    else:
+      logging.info("Creating an new StreetLearnEngine.")
+      self._engine = streetlearn_engine.StreetLearnEngine.Create(
+          dataset_path,
+          width=self._config["width"],
+          height=self._config["height"],
+          graph_width=self._config["graph_width"],
+          graph_height=self._config["graph_height"],
+          status_height=self._config["status_height"],
+          field_of_view=self._field_of_view,
+          min_graph_depth=self._min_graph_depth,
+          max_graph_depth=self._max_graph_depth,
+          max_cache_size=self._config["max_cache_size"])
     assert self._engine, "Could not initialise engine from %r." % dataset_path
     self._observations = []
     for name in self._config["observations"]:
@@ -155,12 +189,18 @@ class StreetLearn(object):
         logging.warning(str(e))
 
     self._reward = 0
+    self._prev_reward = 0
+    self._prev_action = self._action_set[0]
     self._done = False
     self._info = {}
 
   @property
   def config(self):
     return self._config
+
+  @property
+  def seed(self):
+    return self._seed
 
   @property
   def game(self):
@@ -214,10 +254,18 @@ class StreetLearn(object):
   def bbox_lng_max(self):
     return self._bbox_lng_max
 
+  @property
+  def cache_size(self):
+    return self._engine.GetNodeCacheSize()
+
   def observation_spec(self):
     """Returns the observation spec, dependent on the observation format."""
     return {observation.name: observation.observation_spec
             for observation in self._observations}
+
+  def action_set(self):
+    """Returns the set of actions, mapping integer actions to 1D arrays."""
+    return self._action_set
 
   def action_spec(self):
     """Returns the action spec."""
@@ -225,6 +273,12 @@ class StreetLearn(object):
 
   def reset(self):
     """Start a new episode."""
+    reset_time = time.time()
+    logging.info('reset: seed %d, previous episode (%d frames) lasted %f sec',
+                 self._seed, self._frame_count, reset_time - self._prev_reset)
+    self._prev_reset = reset_time
+    self._prev_reward = 0
+    self._prev_action = self._action_set[0]
     self._frame_count = 0
     self._episode_id += 1
     if self._sample_graph_depth:
@@ -243,17 +297,20 @@ class StreetLearn(object):
             self._start_pano_id)
       else:
         self._current_pano_id = self._engine.BuildRandomGraph()
-      logging.info('Built new graph with root %s', self._current_pano_id)
+      logging.info('seed %d: built new graph with root %s',
+                   self._seed, self._current_pano_id)
     # else respawn in current graph.
     elif not self._start_pano_id:
-      self._current_pano_id = np.random.choice(self._engine.GetGraph().keys())
+      self._current_pano_id = np.random.choice(
+          list(self._engine.GetGraph().keys()))
       self._engine.SetPosition(self._current_pano_id)
-      logging.info('Reusing existing graph and respawning %s',
-                   self._current_pano_id)
+      logging.info('seed %d: reusing existing graph and respawning at %s',
+                   self._seed, self._current_pano_id)
 
     self._graph = self._engine.GetGraph()
     highlighted_panos = self._game.on_reset(self)
-    self._engine.InitGraphRenderer(self._color_for_observer, highlighted_panos)
+    self._engine.InitGraphRenderer(self._color_for_observer, highlighted_panos,
+                                   self._black_on_white)
     self._engine.SetZoom(_MAX_ZOOM)
 
   def goto(self, pano_id, yaw):
@@ -286,6 +343,7 @@ class StreetLearn(object):
     self._frame_count += 1
     if type(action) != np.ndarray:
       action = np.array(action, dtype=np.float)
+    self._prev_action = action
     assert action.size == NUM_ACTIONS, "Wrong number of actions."
     move_forward = np.dot(action, ACTIONS['move_forward'])
     horizontal_rotation = np.dot(action, ACTIONS['horizontal_rotation'])
@@ -308,6 +366,7 @@ class StreetLearn(object):
     # Update the reward and done flag. Because we do not know the code logic
     # inside each game, it is safer to obtain these immediately after step(),
     # and store them for subsequent calls to reward(), done() and info().
+    self._prev_reward = self._reward
     self._reward = self._game.get_reward(self)
     self._done = (self._frame_count > self._frame_cap) or self._game.done()
     self._info = self._game.get_info(self)
@@ -333,6 +392,14 @@ class StreetLearn(object):
     """Return a dictionary with environment information at the current step."""
     return self._info
 
+  def prev_reward(self):
+    """Returns the reward for the previous time step."""
+    return self._prev_reward
+
+  def prev_action(self):
+    """Returns the action for the previous time step."""
+    return self._prev_action
+
   def get_metadata(self, pano_id):
     """Return the metadata corresponding to the selected pano.
 
@@ -349,4 +416,3 @@ class StreetLearn(object):
   def render(self):
     """Empty function, for compatibility with OpenAI Gym."""
     pass
-

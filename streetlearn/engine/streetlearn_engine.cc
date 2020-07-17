@@ -15,6 +15,7 @@
 #include "streetlearn/engine/streetlearn_engine.h"
 
 #include <functional>
+#include <memory>
 
 #include "streetlearn/engine/logging.h"
 #include "absl/hash/hash.h"
@@ -32,6 +33,7 @@ constexpr bool kShowStopSigns = true;
 constexpr double kTolerance = 30;
 constexpr double kMaxYaw = 180;
 constexpr double kMaxPitch = 90;
+constexpr int kThreadCount = 16;
 
 // Constrain angle to be in [-constraint, constraint].
 void ConstrainAngle(double constraint, double* angle) {
@@ -53,20 +55,33 @@ std::unique_ptr<StreetLearnEngine> StreetLearnEngine::Create(
   if (!dataset) {
     return nullptr;
   }
+  auto node_cache = CreateNodeCache(dataset.get(), kThreadCount,
+                                    max_cache_size);
+  if (!node_cache) {
+    return nullptr;
+  }
 
   return absl::make_unique<StreetLearnEngine>(
-      std::move(dataset), Vector2_i(width, height),
+      std::move(dataset), std::move(node_cache), Vector2_i(width, height),
       Vector2_i(graph_width, graph_height), status_height, field_of_view,
-      min_graph_depth, max_graph_depth, max_cache_size);
+      min_graph_depth, max_graph_depth);
 }
 
-StreetLearnEngine::StreetLearnEngine(std::unique_ptr<Dataset> dataset,
-                                     const Vector2_i& pano_size,
-                                     const Vector2_i& graph_size,
-                                     int status_height, int field_of_view,
-                                     int min_graph_depth, int max_graph_depth,
-                                     int max_cache_size)
+std::unique_ptr<StreetLearnEngine> StreetLearnEngine::Clone(
+    int width, int height, int graph_width, int graph_height, int status_height,
+    int field_of_view, int min_graph_depth, int max_graph_depth) {
+  return absl::make_unique<StreetLearnEngine>(
+      std::move(dataset_), node_cache_, Vector2_i(width, height),
+      Vector2_i(graph_width, graph_height), status_height, field_of_view,
+      min_graph_depth, max_graph_depth);
+}
+
+StreetLearnEngine::StreetLearnEngine(
+    std::shared_ptr<Dataset> dataset, std::shared_ptr<NodeCache> node_cache,
+    const Vector2_i& pano_size, const Vector2_i& graph_size, int status_height,
+    int field_of_view, int min_graph_depth, int max_graph_depth)
     : dataset_(std::move(dataset)),
+      node_cache_(std::move(node_cache)),
       pano_size_(pano_size),
       graph_size_(graph_size),
       show_stop_signs_(kShowStopSigns),
@@ -75,8 +90,8 @@ StreetLearnEngine::StreetLearnEngine(std::unique_ptr<Dataset> dataset,
       field_of_view_(field_of_view),
       pano_buffer_(3 * pano_size.x() * pano_size.y()),
       graph_buffer_(3 * graph_size.x() * graph_size.y()),
-      pano_graph_(kDefaultPrefetchGraphDepth, max_cache_size, min_graph_depth,
-                  max_graph_depth, dataset_.get()),
+      pano_graph_(kDefaultPrefetchGraphDepth, min_graph_depth,
+                  max_graph_depth, dataset_, node_cache_),
       pano_renderer_(pano_size.x(), pano_size.y(), status_height,
                      field_of_view) {
   // TODO: Init return value unused.
@@ -194,7 +209,7 @@ std::vector<uint8_t> StreetLearnEngine::GetNeighborOccupancy(
   // then add a fixed offset that is half the size of one bin to make the
   // agent's current orientation be centered in a bin rather than in between.
   double double_offset = 360.0 / static_cast<double>(resolution) / 2.0;
-  for (auto bearing : neighbor_bearings) {
+  for (const auto& bearing : neighbor_bearings) {
     double recentered = bearing.bearing - rotation_yaw_;
     double offset = recentered + double_offset;
     offset -= 360.0 * floor(offset / 360.0);
@@ -207,10 +222,12 @@ std::vector<uint8_t> StreetLearnEngine::GetNeighborOccupancy(
 
 bool StreetLearnEngine::InitGraphRenderer(
     const Color& observer_color,
-    const std::map<std::string, streetlearn::Color>& panos_to_highlight) {
+    const std::map<std::string, streetlearn::Color>& panos_to_highlight,
+    const bool black_on_white) {
   observer_.color = observer_color;
   graph_renderer_ =
-      GraphRenderer::Create(pano_graph_, graph_size_, panos_to_highlight);
+      GraphRenderer::Create(pano_graph_, graph_size_, panos_to_highlight,
+                            black_on_white);
   return graph_renderer_ != nullptr;
 }
 

@@ -41,20 +41,6 @@ flags.mark_flag_as_required("dataset_path")
 flags.mark_flag_as_required("list_pano_ids_yaws")
 
 
-def interleave(array, w, h):
-  """Turn a planar RGB array into an interleaved one.
-
-  Args:
-    array: An array of bytes consisting the planar RGB image.
-    w: Width of the image.
-    h: Height of the image.
-  Returns:
-    An interleaved array of bytes shape shaped (h, w, 3).
-  """
-  arr = array.reshape(3, w * h)
-  return np.ravel((arr[0], arr[1], arr[2]),
-                  order='F').reshape(h, w, 3).swapaxes(0, 1)
-
 def loop(env, screen, pano_ids_yaws):
   """Main loop of the scan agent."""
   for (pano_id, yaw) in pano_ids_yaws:
@@ -64,12 +50,10 @@ def loop(env, screen, pano_ids_yaws):
     observation = env.goto(pano_id, yaw)
 
     current_yaw = observation["yaw"]
-    view_image = interleave(observation["view_image"],
-                            FLAGS.width, FLAGS.height)
-    graph_image = interleave(observation["graph_image"],
-                             FLAGS.width, FLAGS.height)
-    screen_buffer = np.concatenate((view_image, graph_image), axis=1)
-    pygame.surfarray.blit_array(screen, screen_buffer)
+    view_image = observation["view_image_hwc"]
+    graph_image = observation["graph_image_hwc"]
+    screen_buffer = np.concatenate((view_image, graph_image), axis=0)
+    pygame.surfarray.blit_array(screen, screen_buffer.swapaxes(0, 1))
     pygame.display.update()
 
     for event in pygame.event.get():
@@ -90,7 +74,7 @@ def main(argv):
             'full_graph': True,
             'proportion_of_panos_with_coins': 0.0,
             'action_spec': 'streetlearn_fast_rotate',
-            'observations': ['view_image', 'graph_image', 'yaw']}
+            'observations': ['view_image_hwc', 'graph_image_hwc', 'yaw']}
   with open(FLAGS.list_pano_ids_yaws, 'r') as f:
     lines = f.readlines()
     pano_ids_yaws = [(line.split('\t')[0], float(line.split('\t')[1]))

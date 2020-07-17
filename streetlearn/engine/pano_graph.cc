@@ -25,30 +25,31 @@
 #include "absl/synchronization/notification.h"
 #include "streetlearn/engine/math_util.h"
 #include "streetlearn/engine/metadata_cache.h"
+#include "streetlearn/engine/node_cache.h"
 #include "streetlearn/engine/pano_calculations.h"
 
 namespace streetlearn {
 namespace {
 
-constexpr int kThreadCount = 16;
 constexpr int kMinGraphDepth = 10;
 constexpr double kNeighborAltituteThresholdMeters = 2.0;
 
 }  // namespace
 
-PanoGraph::PanoGraph(int prefetch_depth, int max_cache_size,
-                     int min_graph_depth, int max_graph_depth,
-                     const Dataset* dataset)
-    : dataset_(dataset),
+PanoGraph::PanoGraph(int prefetch_depth, int min_graph_depth,
+                     int max_graph_depth,
+                     std::shared_ptr<Dataset> dataset,
+                     std::shared_ptr<NodeCache> node_cache)
+    : dataset_(std::move(dataset)),
       min_graph_depth_(min_graph_depth),
       max_graph_depth_(max_graph_depth),
       prefetch_depth_(prefetch_depth),
-      node_cache_(dataset, kThreadCount, max_cache_size) {}
+      node_cache_(std::move(node_cache)) {}
 
 PanoGraph::~PanoGraph() { CancelPendingFetches(); }
 
 bool PanoGraph::Init() {
-  metadata_cache_ = MetadataCache::Create(dataset_, kMinGraphDepth);
+  metadata_cache_ = MetadataCache::Create(dataset_.get(), kMinGraphDepth);
   if (!metadata_cache_) {
     LOG(ERROR) << "Unable to initialize Pano graph";
     return false;
@@ -428,17 +429,17 @@ bool PanoGraph::BuildGraph(const std::string& root_node_id,
 PanoGraphNode PanoGraph::FetchNode(const std::string& node_id) {
   PanoGraphNode retval;
   absl::Notification notification;
-  node_cache_.Lookup(node_id,
-                     [&retval, &notification](const PanoGraphNode* node) {
-                       retval = *node;
-                       notification.Notify();
-                     });
+  node_cache_->Lookup(node_id,
+                      [&retval, &notification](const PanoGraphNode* node) {
+                        retval = *node;
+                        notification.Notify();
+                      });
   notification.WaitForNotification();
   return retval;
 }
 
 void PanoGraph::PrefetchNode(const std::string& node_id) {
-  node_cache_.Lookup(node_id, [this](const PanoGraphNode* node) {
+  node_cache_->Lookup(node_id, [this](const PanoGraphNode* node) {
     if (blockingCounter_) {
       blockingCounter_->DecrementCount();
     }
@@ -446,7 +447,7 @@ void PanoGraph::PrefetchNode(const std::string& node_id) {
 }
 
 void PanoGraph::CancelPendingFetches() {
-  node_cache_.CancelPendingFetches();
+  node_cache_->CancelPendingFetches();
   if (blockingCounter_) {
     blockingCounter_->Wait();
   }

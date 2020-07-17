@@ -23,7 +23,8 @@ exports_files(["LICENSE"])
 py_binary(
     name = "human_agent",
     srcs = ["human_agent.py"],
-    python_version = "PY2",
+    python_version = "PY3",
+    srcs_version = "PY3",
     deps = [
         "//streetlearn/engine/python:streetlearn_engine",
         "//streetlearn/python/environment:environment_py",
@@ -33,7 +34,8 @@ py_binary(
 py_binary(
     name = "instruction_following_oracle_agent",
     srcs = ["instruction_following_oracle_agent.py"],
-    python_version = "PY2",
+    python_version = "PY3",
+    srcs_version = "PY3",
     deps = [
         "//streetlearn/engine/python:streetlearn_engine",
         "//streetlearn/python/environment:environment_py",
@@ -43,7 +45,19 @@ py_binary(
 py_binary(
     name = "oracle_agent",
     srcs = ["oracle_agent.py"],
-    python_version = "PY2",
+    python_version = "PY3",
+    srcs_version = "PY3",
+    deps = [
+        "//streetlearn/engine/python:streetlearn_engine",
+        "//streetlearn/python/environment:environment_py",
+    ],
+)
+
+py_binary(
+    name = "batched_oracle_agent",
+    srcs = ["batched_oracle_agent.py"],
+    python_version = "PY3",
+    srcs_version = "PY3",
     deps = [
         "//streetlearn/engine/python:streetlearn_engine",
         "//streetlearn/python/environment:environment_py",
@@ -53,7 +67,8 @@ py_binary(
 py_binary(
     name = "scan_agent",
     srcs = ["scan_agent.py"],
-    python_version = "PY2",
+    python_version = "PY3",
+    srcs_version = "PY3",
     deps = [
         "//streetlearn/engine/python:streetlearn_engine",
         "//streetlearn/python/environment:environment_py",

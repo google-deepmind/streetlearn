@@ -21,6 +21,7 @@
 #include "absl/strings/str_cat.h"
 #include "streetlearn/engine/cairo_util.h"
 #include "streetlearn/engine/dataset_factory.h"
+#include "streetlearn/engine/node_cache.h"
 #include "streetlearn/engine/pano_graph.h"
 #include "streetlearn/engine/test_dataset.h"
 #include "streetlearn/engine/test_utils.h"
@@ -35,6 +36,8 @@ constexpr int kScreenWidth = 640;
 constexpr int kScreenHeight = 480;
 constexpr int kGraphDepth = 10;
 constexpr char kTestFilePath[] = "engine/test_data/";
+constexpr bool kBlackOnWhiteFalse = false;
+constexpr bool kBlackOnWhiteTrue = true;
 
 class GraphImageCacheTest : public testing::Test {
  public:
@@ -43,11 +46,14 @@ class GraphImageCacheTest : public testing::Test {
   void SetUp() {
     dataset_ = CreateDataset(TestDataset::GetPath());
     ASSERT_TRUE(dataset_ != nullptr);
+    node_cache_ = CreateNodeCache(dataset_.get(), TestDataset::kThreadCount,
+                                  TestDataset::kMaxCacheSize);
+    ASSERT_TRUE(node_cache_ != nullptr);
 
     pano_graph_ = absl::make_unique<PanoGraph>(
-        TestDataset::kMaxGraphDepth, TestDataset::kMaxCacheSize,
-        TestDataset::kMinGraphDepth, TestDataset::kMaxGraphDepth,
-        dataset_.get());
+        TestDataset::kMaxGraphDepth, TestDataset::kMinGraphDepth,
+        TestDataset::kMaxGraphDepth, std::move(dataset_),
+        std::move(node_cache_));
 
     // Build the pano graph.
     pano_graph_->SetRandomSeed(1);
@@ -61,16 +67,27 @@ class GraphImageCacheTest : public testing::Test {
                                             TestDataset::kMaxLongitude);
     S2LatLngRect graph_bounds(bounds_min, bounds_max);
     graph_image_cache_ = absl::make_unique<GraphImageCache>(
-        Vector2_i{kScreenWidth, kScreenHeight}, std::map<std::string, Color>{});
+        Vector2_i{kScreenWidth, kScreenHeight}, std::map<std::string, Color>{},
+        kBlackOnWhiteFalse);
 
     ASSERT_TRUE(
         graph_image_cache_->InitCache(*pano_graph_.get(), graph_bounds));
+
+    graph_image_cache_black_on_white_ = absl::make_unique<GraphImageCache>(
+        Vector2_i{kScreenWidth, kScreenHeight}, std::map<std::string, Color>{},
+        kBlackOnWhiteTrue);
+
+    ASSERT_TRUE(
+        graph_image_cache_black_on_white_->InitCache(*pano_graph_.get(),
+                                                     graph_bounds));
   }
 
   std::unique_ptr<GraphImageCache> graph_image_cache_;
+  std::unique_ptr<GraphImageCache> graph_image_cache_black_on_white_;
 
  private:
-  std::unique_ptr<const Dataset> dataset_;
+  std::unique_ptr<Dataset> dataset_;
+  std::unique_ptr<NodeCache> node_cache_;
   std::unique_ptr<PanoGraph> pano_graph_;
 };
 
@@ -95,6 +112,11 @@ TEST_F(GraphImageCacheTest, GraphImageCacheTest) {
   EXPECT_DOUBLE_EQ(graph_image_cache_->current_zoom(), 1.0);
   EXPECT_TRUE(test_utils::CompareImages(
       graph_image_cache_->Pixels(image_centre),
+      absl::StrCat(kTestFilePath, "image_cache_test.png")));
+
+  // Test black on white graphs.
+  EXPECT_FALSE(test_utils::CompareImages(
+      graph_image_cache_black_on_white_->Pixels(image_centre),
       absl::StrCat(kTestFilePath, "image_cache_test.png")));
 }
 

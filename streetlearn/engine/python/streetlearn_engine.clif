@@ -16,8 +16,8 @@
 from "third_party/absl/python/numpy/span.h" import *
 from "third_party/absl/python/optional.h" import *
 from "streetlearn/proto/streetlearn_pyclif.h" import *
-from "streetlearn/engine/python/metadata_cache.h" import *
-from "streetlearn/engine/python/color.h" import *
+from "streetlearn/engine/python/metadata_cache_clif.h" import *
+from "streetlearn/engine/python/color_clif.h" import *
 
 use `std::map` as dict
 
@@ -31,9 +31,14 @@ from "streetlearn/engine/streetlearn_engine.h":
         status_height: int = default, field_of_view: int = default,
         min_graph_depth: int = default, max_graph_depth: int = default,
         max_cache_size: int = default) -> StreetLearnEngine
+      def Clone(self, width: int = default, height: int = default,
+        graph_width: int = default, graph_height: int = default,
+        status_height: int = default, field_of_view: int = default,
+        min_graph_depth: int = default, max_graph_depth: int = default)
+        -> StreetLearnEngine
       def InitEpisode(self, episode_index: int, random_seed: int)
       def InitGraphRenderer(self, observer_color: Color,
-        panos_to_highlight: dict<str, Color>) -> bool
+        panos_to_highlight: dict<str, Color>, black_on_white: bool) -> bool
       def BuildRandomGraph(self) -> NoneOr<str>
       def BuildGraphWithRoot(self, pano_id: str) -> NoneOr<str>
       def BuildEntireGraph(self) -> NoneOr<str>
@@ -53,3 +58,4 @@ from "streetlearn/engine/streetlearn_engine.h":
       def GetPanoBearing(self, pano_id1: str, pano_id2: str) -> NoneOr<float>
       def GetYaw(self) -> float
       def GetPitch(self) -> float
+      def GetNodeCacheSize(self) -> int

@@ -591,6 +591,7 @@ cc_test(
         ":graph_image_cache",
         ":graph_renderer",
         ":math",
+        ":node_cache",
         ":pano_graph",
         ":test_dataset",
         ":test_utils",

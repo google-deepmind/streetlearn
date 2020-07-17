@@ -25,6 +25,7 @@ from absl import logging
 
 import numpy as np
 
+from streetlearn.engine.python import color
 from streetlearn.python.environment import game
 
 
@@ -46,8 +47,8 @@ class CoinGame(game.Game):
 
     # Create colors from the input lists.
     self._colors = {
-        'coin': config['color_for_coin'],
-        'touched': config['color_for_touched_pano'],
+        'coin': color.Color(*config['color_for_coin']),
+        'touched': color.Color(*config['color_for_touched_pano']),
     }
     self._reward_per_coin = config['reward_per_coin']
 
@@ -87,14 +88,18 @@ class CoinGame(game.Game):
     Returns:
       A newly populated pano_id_to_color dictionary.
     """
+    logging.info('seed %d, %d/%d coins left, cache size %d, current pano: %s',
+                 streetlearn.seed, len(self._coin_pano_id_set), self._num_coins,
+                 streetlearn.cache_size, streetlearn.current_pano_id)
     # Populate list of available panos.
     if not self._pano_ids:
       self._pano_ids = sorted(streetlearn.graph)
 
     self._touched_pano_id_set.clear()
-    self._num_coins = int(
-        self._proportion_of_panos_with_coins * len(self._pano_ids))
-    print("Sampling {} coins through the environment".format(self._num_coins))
+    num_pano_ids = len(self._pano_ids)
+    self._num_coins = int(self._proportion_of_panos_with_coins * num_pano_ids)
+    print("Sampling {} coins in graph of {} panos.".format(
+        self._num_coins, num_pano_ids))
     self._coin_pano_id_set = np.random.choice(
         self._pano_ids, self._num_coins, replace=False).tolist()
     self._pano_id_to_color = {coin_pano_id: self._colors['coin']

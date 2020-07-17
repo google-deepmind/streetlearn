@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import copy
-from streetlearn.engine.python import color
 from streetlearn.python.environment import coin_game
 from streetlearn.python.environment import courier_game
 from streetlearn.python.environment import curriculum_courier_game
@@ -66,20 +65,21 @@ DEFAULT_CONFIG = {
     'sample_graph_depth': True,
     'start_pano': '',
     'graph_zoom': 32,
+    'graph_black_on_white': False,
     'show_shortest_path': False,
     'calculate_ground_truth': False,
     'neighbor_resolution': 8,
-    'color_for_touched_pano': color.Color(1.0, 0.5, 0.5),
-    'color_for_observer': color.Color(0.5, 0.5, 1.0),
-    'color_for_coin': color.Color(1.0, 1.0, 0.0),
-    'color_for_goal': color.Color(1.0, 0.0, 0.0),
-    'color_for_shortest_path': color.Color(1.0, 0.0, 1.0),
-    'color_for_waypoint': color.Color(0, 0.7, 0.7),
+    'color_for_touched_pano': (1.0, 0.5, 0.5),
+    'color_for_observer': (0.5, 0.5, 1.0),
+    'color_for_coin': (1.0, 1.0, 0.0),
+    'color_for_goal': (1.0, 0.0, 0.0),
+    'color_for_shortest_path': (1.0, 0.0, 1.0),
+    'color_for_waypoint': (0, 0.7, 0.7),
     'observations': ['view_image', 'graph_image'],
     'reward_per_coin': 1.0,
     'reward_at_waypoint': 0.5,
     'reward_at_goal': 1.0,
-    'instruction_file': None,
+    'instruction_file': '',
     'num_instructions': 5,
     'max_instructions': 5,
     'proportion_of_panos_with_coins': 0.5,

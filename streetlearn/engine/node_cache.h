@@ -49,6 +49,11 @@ class NodeCache {
   // Type of the client callback.
   using LoadCallback = std::function<void(const PanoGraphNode*)>;
 
+  // Create a Cache that will use thread_count threads for fetching panos from
+  // the dataset and store up to max_size pano nodes.
+  static std::unique_ptr<NodeCache> CreateNodeCache(
+      const Dataset* dataset, int thread_count, std::size_t max_size);
+
   // The Cache will use thread_count threads for fetching panos from the dataset
   // and store up to max_size pano nodes.
   NodeCache(const Dataset* dataset, int thread_count, std::size_t max_size);
@@ -68,6 +73,9 @@ class NodeCache {
 
   // Cancel any outstanding fetches.
   void CancelPendingFetches() STREETLEARN_LOCKS_EXCLUDED(mutex_);
+
+  // Return the cache size.
+  int GetSize() { return cache_size_; }
 
  private:
   // Updates the cache with the give node and returns any callbacks required.
@@ -112,9 +120,17 @@ class NodeCache {
   // Maximum size of the cache.
   const std::size_t max_size_;
 
+  // Current size of the cache.
+  int cache_size_;
+
   // The pano fetcher
   PanoFetcher pano_fetcher_;
 };
+
+// Instantiates a NodeCache object.
+std::unique_ptr<NodeCache> CreateNodeCache(const Dataset* dataset,
+                                           int thread_count,
+                                           std::size_t max_size);
 
 }  //  namespace streetlearn
 

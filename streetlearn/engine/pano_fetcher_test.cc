@@ -32,8 +32,6 @@
 namespace streetlearn {
 namespace {
 
-constexpr int kThreadCount = 8;
-
 class PanoFetcherTest : public ::testing::Test {
  public:
   static void SetUpTestSuite() { ASSERT_TRUE(TestDataset::Generate()); }
@@ -108,7 +106,7 @@ class FetchTest {
 
 TEST_F(PanoFetcherTest, TestPanoFetcher) {
   FetchTest fetch_test(TestDataset::kPanoCount);
-  PanoFetcher pano_fetcher(dataset_.get(), kThreadCount,
+  PanoFetcher pano_fetcher(dataset_.get(), TestDataset::kThreadCount,
                            fetch_test.MakeCallback());
 
   for (int i = 1; i <= TestDataset::kPanoCount; ++i) {
@@ -127,7 +125,7 @@ TEST_F(PanoFetcherTest, TestPanoFetcher) {
 
 TEST_F(PanoFetcherTest, CancelFetchTest) {
   FetchTest fetch_test(TestDataset::kPanoCount);
-  PanoFetcher pano_fetcher(dataset_.get(), kThreadCount,
+  PanoFetcher pano_fetcher(dataset_.get(), TestDataset::kThreadCount,
                            fetch_test.MakeCallback());
 
   std::vector<std::string> pano_ids(TestDataset::kPanoCount);
@@ -147,7 +145,7 @@ TEST_F(PanoFetcherTest, CancelFetchTest) {
 
 TEST_F(PanoFetcherTest, InvalidPanoTests) {
   FetchTest fetch_test(TestDataset::kPanoCount);
-  PanoFetcher pano_fetcher(dataset_.get(), kThreadCount,
+  PanoFetcher pano_fetcher(dataset_.get(), TestDataset::kThreadCount,
                            fetch_test.MakeCallback());
 
   auto pano_node = pano_fetcher.Fetch("Pano1");

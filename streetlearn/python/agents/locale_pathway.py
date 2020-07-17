@@ -21,7 +21,7 @@ from __future__ import print_function
 import collections
 
 import sonnet as snt
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 # Outputs of the global city-specific pathway
 LocalePathwayOutput = collections.namedtuple(

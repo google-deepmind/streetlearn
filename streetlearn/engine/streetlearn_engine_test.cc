@@ -26,6 +26,7 @@
 #include "absl/strings/str_cat.h"
 #include "streetlearn/engine/dataset_factory.h"
 #include "streetlearn/engine/math_util.h"
+#include "streetlearn/engine/node_cache.h"
 #include "streetlearn/engine/pano_calculations.h"
 #include "streetlearn/engine/test_dataset.h"
 #include "streetlearn/engine/test_utils.h"
@@ -46,6 +47,7 @@ constexpr int kBufferSize =
 
 constexpr Color kObserverColor = {0.4, 0.6, 0.9};
 constexpr Color kNodeColor = {0.1, 0.9, 0.1};
+constexpr bool kBlackOnWhite = false;
 
 using ::testing::DoubleEq;
 using ::testing::Eq;
@@ -56,21 +58,25 @@ class StreetLearnEngineTest : public testing::Test {
   static void SetUpTestSuite() { ASSERT_TRUE(TestDataset::Generate()); }
 
   void SetUp() override {
-    std::unique_ptr<Dataset> dataset = CreateDataset(TestDataset::GetPath());
+    std::shared_ptr<Dataset> dataset = CreateDataset(TestDataset::GetPath());
     ASSERT_TRUE(dataset != nullptr);
+    std::shared_ptr<NodeCache> node_cache = CreateNodeCache(
+        dataset.get(), TestDataset::kThreadCount, TestDataset::kMaxCacheSize);
+    ASSERT_TRUE(node_cache != nullptr);
 
     engine_ = absl::make_unique<StreetLearnEngine>(
-        std::move(dataset),
+        std::move(dataset), std::move(node_cache),
         Vector2_i(TestDataset::kImageWidth, TestDataset::kImageHeight),
         Vector2_i(kScreenWidth, kScreenHeight), kStatusHeight, kFieldOfView,
-        kMinGraphDepth, kMaxGraphDepth, TestDataset::kMaxCacheSize);
+        kMinGraphDepth, kMaxGraphDepth);
 
     engine_->InitEpisode(0 /*episode_index*/, 0 /*random_seed*/);
     ASSERT_THAT(engine_->BuildGraphWithRoot("1"), Optional(Eq("1")));
 
     ASSERT_TRUE(engine_->InitGraphRenderer(
         kObserverColor,
-        {{"2", kNodeColor}, {"4", kNodeColor}, {"6", kNodeColor}}));
+        {{"2", kNodeColor}, {"4", kNodeColor}, {"6", kNodeColor}},
+        kBlackOnWhite));
   }
 
   std::unique_ptr<StreetLearnEngine> engine_;
@@ -153,6 +159,41 @@ TEST(StreetLearn, StreetLearnEngineCreateTest) {
   EXPECT_EQ(obs.size(), kBufferSize);
 
   auto graph = engine->GetGraph();
+  EXPECT_EQ(graph.size(), TestDataset::kPanoCount);
+}
+
+
+TEST(StreetLearn, StreetLearnEngineCloneTest) {
+  TestDataset::Generate();
+
+  auto engine1 = StreetLearnEngine::Create(
+      TestDataset::GetPath(), TestDataset::kImageWidth,
+      TestDataset::kImageHeight, TestDataset::kImageWidth,
+      TestDataset::kImageHeight, kStatusHeight, kFieldOfView);
+  engine1->InitEpisode(0 /*episode_index*/, 0 /*random_seed*/);
+
+  auto engine2 = engine1->Clone(
+      TestDataset::kImageWidth, TestDataset::kImageHeight,
+      TestDataset::kImageWidth, TestDataset::kImageHeight,
+      kStatusHeight, kFieldOfView);
+  engine2->InitEpisode(0 /*episode_index*/, 1 /*random_seed*/);
+
+  auto engine3 = engine2->Clone(
+      TestDataset::kImageWidth, TestDataset::kImageHeight,
+      TestDataset::kImageWidth, TestDataset::kImageHeight,
+      kStatusHeight, kFieldOfView);
+  engine3->InitEpisode(0 /*episode_index*/, 2 /*random_seed*/);
+
+  // Do some basic checks on the graph.
+  auto opt_id = engine3->BuildRandomGraph();
+  ASSERT_TRUE(opt_id);
+  EXPECT_EQ(engine3->SetPosition(opt_id.value()), opt_id.value());
+  EXPECT_EQ(engine3->GetPano()->id(), opt_id.value());
+
+  auto obs = engine3->RenderObservation();
+  EXPECT_EQ(obs.size(), kBufferSize);
+
+  auto graph = engine3->GetGraph();
   EXPECT_EQ(graph.size(), TestDataset::kPanoCount);
 }
 

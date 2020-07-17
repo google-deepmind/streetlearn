@@ -158,7 +158,7 @@ void PanoRenderer::DrawStatusBar(
   // possible.
   double chosen_dir(std::numeric_limits<double>::max());
   double min_distance(std::numeric_limits<double>::max());
-  for (auto neighbor : bearings) {
+  for (const auto& neighbor : bearings) {
     double diff = fabs(neighbor.bearing - current_bearing);
     if (diff > 180.0) {
       diff = 360.0 - diff;
@@ -171,7 +171,7 @@ void PanoRenderer::DrawStatusBar(
 
   // Draw all the bearings except for the chosen direction, which will be drawn
   // last so that no other bearing is superimposed.
-  for (auto neighbor : bearings) {
+  for (const auto& neighbor : bearings) {
     if (neighbor.bearing == chosen_dir) {
       continue;
     }

@@ -19,6 +19,7 @@ from __future__ import print_function
 
 import abc
 import numpy as np
+import six
 
 _METADATA_COUNT = 14
 _NUM_HEADING_BINS = 16
@@ -26,9 +27,24 @@ _NUM_LAT_BINS = 32
 _NUM_LNG_BINS = 32
 
 
-class Observation(object):
+def reshape_hwc(array, c, w, h):
+  """Turn a planar RGB array into an interleaved one.
+
+  Args:
+    array: An array of bytes consisting the planar RGB image of size (c, w, h).
+    c: Number of channels in the image.
+    w: Width of the image.
+    h: Height of the image.
+  Returns:
+    An interleaved array of bytes shape shaped (h, w, c).
+  """
+  arr = array.reshape(c, w * h)
+  return np.ravel((arr[0], arr[1], arr[2]),
+                  order='F').reshape(h, w, 3)
+
+
+class Observation(six.with_metaclass(abc.ABCMeta, object)):
   """Base class for all observations."""
-  __metaclass__ = abc.ABCMeta
 
   def __init__(self, streetlearn):
     self._streetlearn = streetlearn
@@ -46,10 +62,11 @@ class Observation(object):
   @classmethod
   def create(cls, name, streetlearn):
     """Dispatches an Observation based on `name`."""
-    observations = [ViewImage, GraphImage, Yaw, Pitch, Metadata, TargetMetadata,
-                    LatLng, TargetLatLng, YawLabel, Neighbors, LatLngLabel,
-                    TargetLatLngLabel, Thumbnails, Instructions,
-                    GroundTruthDirection]
+    observations = [ViewImage, GraphImage, ViewImageHWC, GraphImageHWC, Yaw,
+                    Pitch, Metadata, TargetMetadata, LatLng, TargetLatLng,
+                    YawLabel, Neighbors, LatLngLabel, TargetLatLngLabel,
+                    Thumbnails, Instructions, GroundTruthDirection, PrevReward,
+                    PrevAction]
     dispatch = {o.name: o for o in observations}
     try:
       return dispatch[name](streetlearn)
@@ -58,7 +75,7 @@ class Observation(object):
 
 
 class ViewImage(Observation):
-  """RGB pixel data of the view."""
+  """RGB pixel data of the view with shape (C, H, W) where C = 3."""
   name = 'view_image'
   observation_spec_dtypes = np.uint8
 
@@ -76,12 +93,26 @@ class ViewImage(Observation):
 
   @property
   def observation(self):
+    return self._streetlearn.engine.RenderObservation(self._buffer)
+
+
+class ViewImageHWC(ViewImage):
+  """RGB pixel data of the view with shape (H, W, C) where C = 3."""
+  name = 'view_image_hwc'
+  observation_spec_dtypes = np.uint8
+
+  @property
+  def observation_spec(self):
+    return [self._height, self._width, self._depth]
+
+  @property
+  def observation(self):
     self._streetlearn.engine.RenderObservation(self._buffer)
-    return self._buffer
+    return reshape_hwc(self._buffer, self._depth, self._width, self._height)
 
 
 class GraphImage(Observation):
-  """RGB pixel data of the graph."""
+  """RGB pixel data of the graph with shape (C, H, W) where C = 3."""
   name = 'graph_image'
   observation_spec_dtypes = np.uint8
 
@@ -100,8 +131,23 @@ class GraphImage(Observation):
   @property
   def observation(self):
     highlighted_panos = self._streetlearn.game.highlighted_panos()
+    return self._streetlearn.engine.DrawGraph(highlighted_panos, self._buffer)
+
+
+class GraphImageHWC(GraphImage):
+  """RGB pixel data of the graph with shape (H, W, C) where C = 3."""
+  name = 'graph_image_hwc'
+  observation_spec_dtypes = np.uint8
+
+  @property
+  def observation_spec(self):
+    return [self._height, self._width, self._depth]
+
+  @property
+  def observation(self):
+    highlighted_panos = self._streetlearn.game.highlighted_panos()
     self._streetlearn.engine.DrawGraph(highlighted_panos, self._buffer)
-    return self._buffer
+    return reshape_hwc(self._buffer, self._depth, self._width, self._height)
 
 
 class Yaw(Observation):
@@ -111,7 +157,7 @@ class Yaw(Observation):
 
   @property
   def observation_spec(self):
-    return [0]
+    return [1]
 
   @property
   def observation(self):
@@ -125,7 +171,7 @@ class Pitch(Observation):
 
   @property
   def observation_spec(self):
-    return [0]
+    return [1]
 
   @property
   def observation(self):
@@ -139,7 +185,7 @@ class YawLabel(Observation):
 
   @property
   def observation_spec(self):
-    return [0]
+    return [1]
 
   @property
   def observation(self):
@@ -226,7 +272,7 @@ class LatLngLabel(LatLng):
 
   @property
   def observation_spec(self):
-    return [0]
+    return [1]
 
   @property
   def observation(self):
@@ -296,7 +342,7 @@ class GroundTruthDirection(Observation):
 
   @property
   def observation_spec(self):
-    return [0]
+    return [1]
 
   @property
   def observation(self):
@@ -319,4 +365,32 @@ class Neighbors(Observation):
         self._streetlearn.engine.GetNeighborOccupancy(
             self._streetlearn.neighbor_resolution),
         dtype=np.uint8)
+
+
+class PrevReward(Observation):
+  """The agent's reward at the previous time step."""
+  name = 'prev_reward'
+  observation_spec_dtypes = np.float32
+
+  @property
+  def observation_spec(self):
+    return [1]
+
+  @property
+  def observation(self):
+    return np.array(self._streetlearn.prev_reward(), dtype=np.float32)
+
+
+class PrevAction(Observation):
+  """The agent's action at the previous time step."""
+  name = 'prev_action'
+  observation_spec_dtypes = np.float32
+
+  @property
+  def observation_spec(self):
+    return [4]
+
+  @property
+  def observation(self):
+    return np.array(self._streetlearn.prev_action(), dtype=np.float32)
 

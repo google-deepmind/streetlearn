@@ -26,15 +26,9 @@ from streetlearn.python.environment import coin_game
 
 class ExplorationGame(coin_game.CoinGame):
 
-  def done(self, streetlearn):
+  def done(self):
     """Returns a flag indicating the end of the current episode.
 
     This game ends when all the coins are collected.
-
-    Args:
-      streetlearn: the streetlearn environment.
-    Returns:
-      reward: the reward from the last step.
-      pcontinue: a flag indicating the end of an episode.
     """
     return not bool(self._coin_pano_id_set)

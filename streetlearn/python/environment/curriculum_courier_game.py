@@ -64,17 +64,15 @@ class CurriculumCourierGame(courier_game.CourierGame):
     assert self._hours_curriculum_part_2 > 0
     assert self._min_goal_distance < self._max_goal_distance
 
-    logging.info('CurriculumCourierGame: starts at t=%d', self._timestamp_start)
-    logging.info('CurriculumCourierGame: #hours for part 1 of curriculum: %f',
-                 self._hours_curriculum_part_1)
-    logging.info('CurriculumCourierGame: #hours for part 2 of curriculum: %f',
-                 self._hours_curriculum_part_2)
-    logging.info('CurriculumCourierGame: min goal distance: %f',
-                 self._min_goal_distance)
-    logging.info('CurriculumCourierGame: max goal distance: %f',
-                 self._max_goal_distance)
-    logging.info('CurriculumCourierGame: annealing rate of the curriculum: %f',
-                 self._annealing_rate)
+    logging.info(
+        'Curriculum: starts at t=%d, dist <= %f in P1 (%f h)',
+        self._timestamp_start, self._min_goal_distance,
+        self._hours_curriculum_part_1)
+    logging.info(
+        'Curriculum: then %f < dist <= %f in P2 (%f h)',
+        self._min_goal_distance, self._max_goal_distance,
+        self._hours_curriculum_part_2)
+    logging.info('Curriculum: annealing rate: %f', self._annealing_rate)
 
   def _update_curriculum_goal_distance(self):
     """Updates the allowed distance to the goal according to the curriculum."""
@@ -141,6 +139,6 @@ class CurriculumCourierGame(courier_game.CourierGame):
           streetlearn.current_pano_id, self._current_goal_id)
       self._initial_distance_to_goal = self._min_distance_reached
       logging.info(
-          '%d CurriculumCourierGame: distance to goal: %f (max allowed: %f)',
-          streetlearn.frame_count, self._initial_distance_to_goal,
-          self._allowed_goal_distance)
+          'seed %d, frame %d: distance to goal: %f (max allowed: %f)',
+          streetlearn.seed, streetlearn.frame_count,
+          self._initial_distance_to_goal, self._allowed_goal_distance)

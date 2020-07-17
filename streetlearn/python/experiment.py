@@ -42,7 +42,7 @@ import time
 import numpy as np
 from six.moves import range
 import sonnet as snt
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 from streetlearn.python.agents import goal_nav_agent
 from streetlearn.python.agents import city_nav_agent

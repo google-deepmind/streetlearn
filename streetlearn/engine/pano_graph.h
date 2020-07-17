@@ -45,8 +45,10 @@ class PanoGraph {
   // min_graph_depth: the minimum depth of graphs required.
   // max_graph_depth: the maximum depth of graphs required.
   // dataset: StreetLearn dataset wrapper.
-  PanoGraph(int prefetch_depth, int max_cache_size, int min_graph_depth,
-            int max_graph_depth, const Dataset* dataset);
+  // node_cache: StreetLearn panoramas node cache wrapper.
+  PanoGraph(int prefetch_depth, int min_graph_depth, int max_graph_depth,
+            std::shared_ptr<Dataset> dataset,
+            std::shared_ptr<NodeCache> node_cache);
   ~PanoGraph();
 
   // Loads metadata for the region. Returns false if metadata is not available.
@@ -108,6 +110,9 @@ class PanoGraph {
   // Returns a map of pano_ids to their neighbors in the current graph.
   std::map<std::string, std::vector<std::string>> GetGraph() const;
 
+  // Return the current size of the node cache.
+  int GetNodeCacheSize() { return node_cache_->GetSize(); };
+
  private:
   // Returns metadata for a pano in the node tree. Returns nullptr if not found.
   const PanoMetadata* GetNodeMetadata(const std::string& pano_id) const;
@@ -132,7 +137,8 @@ class PanoGraph {
   // Cancels any ongoing fetch requests.
   void CancelPendingFetches();
 
-  const Dataset* dataset_;
+  // Shared dataset.
+  std::shared_ptr<Dataset> dataset_;
 
   // Limits to the depth of graphs built.
   int min_graph_depth_;
@@ -153,8 +159,8 @@ class PanoGraph {
   // Counts unfinished prefetch requests.
   std::unique_ptr<absl::BlockingCounter> blockingCounter_;
 
-  // Node cache - owns the nodes.
-  NodeCache node_cache_;
+  // Shared node cache. It is the node cache, not the graph that owns the nodes.
+  std::shared_ptr<NodeCache> node_cache_;
 
   // Node tree - gets built once when a graph is constructed.
   std::map<std::string, PanoMetadata> node_tree_;

@@ -18,13 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import time
+
 from absl import app
 from absl import flags
 from absl import logging
-
-import time
 import numpy as np
 import pygame
+from six.moves import range
 
 from streetlearn.python.environment import default_config
 from streetlearn.python.environment import goal_instruction_game
@@ -37,8 +38,10 @@ flags.DEFINE_integer('width', 400, 'Observation and map width.')
 flags.DEFINE_integer('height', 400, 'Observation and map height.')
 flags.DEFINE_integer('field_of_view', 60, 'Field of view.')
 flags.DEFINE_integer('graph_zoom', 1, 'Zoom level.')
+flags.DEFINE_boolean('graph_black_on_white', False,
+                     'Show graph as black on white. False by default.')
 flags.DEFINE_integer('width_text', 300, 'Text width.')
-flags.DEFINE_integer('font_size', 30, 'Font size.')
+flags.DEFINE_integer('font_size', 16, 'Font size.')
 flags.DEFINE_float('horizontal_rot', 10, 'Horizontal rotation step (deg).')
 flags.DEFINE_string('dataset_path', None, 'Dataset path.')
 flags.DEFINE_string('instruction_file', None, 'Instruction path.')
@@ -65,20 +68,6 @@ COLOR_WAYPOINT = (0, 178, 178)
 COLOR_GOAL = (255, 0, 0)
 COLOR_INSTRUCTION = (255, 255, 255)
 
-
-def interleave(array, w, h):
-  """Turn a planar RGB array into an interleaved one.
-
-  Args:
-    array: An array of bytes consisting the planar RGB image.
-    w: Width of the image.
-    h: Height of the image.
-  Returns:
-    An interleaved array of bytes shape shaped (h, w, 3).
-  """
-  arr = array.reshape(3, w * h)
-  return np.ravel((arr[0], arr[1], arr[2]),
-                  order='F').reshape(h, w, 3).swapaxes(0, 1)
 
 def blit_instruction(screen, instruction, font, color, x_min, y, x_max):
   """Render and blit a multiline instruction onto the PyGame screen."""
@@ -142,26 +131,25 @@ def loop(env, screen, x_max, y_max, subsampling, font):
       action = action_spec['move_forward']
 
     # Draw the observations (view, graph, thumbnails, instructions).
-    view_image = interleave(observation['view_image'],
-                            FLAGS.width, FLAGS.height)
-    graph_image = interleave(observation['graph_image'],
-                             FLAGS.width, FLAGS.height)
-    screen_buffer[:FLAGS.width, :FLAGS.height, :] = view_image
-    screen_buffer[:FLAGS.width, FLAGS.height:(FLAGS.height*2), :] = graph_image
+    view_image = observation['view_image_hwc']
+    graph_image = observation['graph_image_hwc']
+    screen_buffer[:FLAGS.width, :FLAGS.height, :] = view_image.swapaxes(0, 1)
+    screen_buffer[:FLAGS.width, FLAGS.height:(FLAGS.height*2), :] = (
+        graph_image.swapaxes(0, 1))
     thumb_image = np.copy(observation['thumbnails'])
     for k in range(FLAGS.max_instructions+1):
       if k != current_step:
         thumb_image[k, :, :, :] = thumb_image[k, :, :, :] / 2
-    thumb_image = np.swapaxes(thumb_image, 0, 1)
-    thumb_image = interleave(thumb_image,
-                             FLAGS.width,
-                             FLAGS.height * (FLAGS.max_instructions + 1))
+    thumb_image = thumb_image.reshape(
+        FLAGS.height * (FLAGS.max_instructions + 1), FLAGS.width, 3)
+    thumb_image = thumb_image.swapaxes(0, 1)
     thumb_image = thumb_image[::subsampling, ::subsampling, :]
     screen_buffer[FLAGS.width:(FLAGS.width+thumb_image.shape[0]),
                   0:thumb_image.shape[1],
                   :] = thumb_image
     pygame.surfarray.blit_array(screen, screen_buffer)
-    instructions = observation['instructions'].split('|')
+    instructions = observation['instructions'].decode('utf-8')
+    instructions = instructions.split('|')
     instructions.append('[goal]')
     x_min = x_max - FLAGS.width_text + 10
     y = 10
@@ -183,7 +171,7 @@ def loop(env, screen, x_max, y_max, subsampling, font):
         return
       if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_p:
-          filename = time.strftime('oracle_agent_%Y%m%d_%H%M%S.bmp')
+          filename = time.strftime('/tmp/oracle_agent_%Y%m%d_%H%M%S.bmp')
           pygame.image.save(screen, filename)
 
 def main(argv):
@@ -194,6 +182,7 @@ def main(argv):
             'graph_width': FLAGS.width,
             'graph_height': FLAGS.height,
             'graph_zoom': FLAGS.graph_zoom,
+            'graph_black_on_white': FLAGS.graph_black_on_white,
             'show_shortest_path': FLAGS.show_shortest_path,
             'calculate_ground_truth': True,
             'goal_timeout': FLAGS.frame_cap,
@@ -209,8 +198,9 @@ def main(argv):
             'max_instructions': FLAGS.max_instructions,
             'proportion_of_panos_with_coins': 0.0,
             'action_spec': 'streetlearn_fast_rotate',
-            'observations': ['view_image', 'graph_image', 'yaw', 'thumbnails',
-                             'instructions', 'ground_truth_direction']}
+            'observations': ['view_image_hwc', 'graph_image_hwc', 'yaw',
+                             'thumbnails', 'instructions',
+                             'ground_truth_direction']}
   # Configure game and environment.
   config = default_config.ApplyDefaults(config)
   if FLAGS.game == 'goal_instruction_game':

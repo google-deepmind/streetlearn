@@ -45,7 +45,10 @@ This environment code contains:
 *   **streetlearn/python/environment** A Python-based interface for calling the
     StreetLearn environment with custom action spaces. Within the Python
     StreetLearn interface, several games are defined in individual files whose
-    names end with **_game.py**.
+    names end with **game.py**. A second interface, called
+    **BatchedStreetLearn**, can be used to instantiate multiple StreetLearn
+    environments that share the same action specs, observation specs, and
+    panorama cache, and return observations in batched format.
 *   **streetlearn/python/ui** A simple interactive **human_agent** and an
     **oracle_agent** and **instruction_following_oracle_agent** for courier and
     instruction-following tasks respectively; all agents are implemented in
@@ -55,7 +58,8 @@ This environment code contains:
     and **instruction_following_oracle_agent** are similar to the human agent
     and automatically navigate towards the goal (courier game) or towards the
     goal via waypoints, following instructions (instruction-following game) and
-    they report oracle performance on these tasks.
+    they report oracle performance on these tasks. A batched version of th
+    oracle agent can be started using **batched_oracle_agent**.
 
 ## Compilation from source
 
@@ -303,6 +307,7 @@ Default environment settings are stored in streetlearn/python/default_config.py.
 *   **start_pano**: The pano ID string to start from. The graph will be build
     out from this point.
 *   **graph_zoom**: Initial graph zoom. Valid between 1 and 32.
+*   **graph_black_on_white**: Show the graph as black on white. Default value: false (shows the graph as white on black).
 *   **show_shortest_path**: Boolean indicator asking whether the shortest path
     to the goal shall be shown on the graph.
 *   **calculate_ground_truth**: Boolean indicator asking whether the ground

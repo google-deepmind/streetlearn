@@ -23,6 +23,7 @@ exports_files(["LICENSE"])
 py_library(
     name = "environment_py",
     srcs = [
+        "batched_streetlearn.py",
         "coin_game.py",
         "courier_game.py",
         "curriculum_courier_game.py",
@@ -39,6 +40,7 @@ py_library(
         "streetlearn.py",
         "thumbnail_helper.py",
     ],
+    srcs_version = "PY2AND3",
     deps = [
         "//streetlearn/engine/python:color",
         "//streetlearn/engine/python:streetlearn_engine",

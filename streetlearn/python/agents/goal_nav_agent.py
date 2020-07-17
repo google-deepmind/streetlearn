@@ -29,7 +29,7 @@ import functools
 from six.moves import range
 from six.moves import zip
 import sonnet as snt
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 import streetlearn.python.agents.locale_pathway as locale_pathway
 from tensorflow.contrib import framework as contrib_framework

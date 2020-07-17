@@ -26,9 +26,9 @@ class ThumbnailHelper(object):
       Thumbnail ndarray.
     """
     observation = streetlearn.goto(pano_id, heading)
-    thumbnail = observation['view_image']
+    thumbnail = observation['view_image_hwc']
     if not self._width:
       self._width = streetlearn.config['width']
       self._height = streetlearn.config['height']
-    thumbnail = thumbnail.reshape([3, self._width, self._height])
+    thumbnail = thumbnail.reshape([self._height, self._width, 3])
     return thumbnail

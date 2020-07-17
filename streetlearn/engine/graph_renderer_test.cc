@@ -24,6 +24,7 @@
 #include "streetlearn/engine/dataset_factory.h"
 #include "streetlearn/engine/graph_image_cache.h"
 #include "streetlearn/engine/math_util.h"
+#include "streetlearn/engine/node_cache.h"
 #include "streetlearn/engine/pano_graph.h"
 #include "streetlearn/engine/test_dataset.h"
 #include "streetlearn/engine/test_utils.h"
@@ -42,6 +43,7 @@ constexpr char kTestFilePath[] = "engine/test_data/";
 constexpr Color kConeColor = {0.4, 0.6, 0.9};
 constexpr Color kNodeColor = {0.1, 0.9, 0.1};
 constexpr Color kHighlightColor = {0.9, 0.1, 0.1};
+constexpr bool kBlackOnWhite = false;
 
 static const auto* const kColoredPanos = new std::map<std::string, Color>{
     {"2", kNodeColor}, {"4", kNodeColor}, {"6", kNodeColor}};
@@ -56,13 +58,16 @@ class GraphRendererTest : public testing::Test {
   void SetUp() override {
     dataset_ = CreateDataset(TestDataset::GetPath());
     ASSERT_TRUE(dataset_ != nullptr);
+    node_cache_ = CreateNodeCache(dataset_.get(), TestDataset::kThreadCount,
+                                  TestDataset::kMaxCacheSize);
+    ASSERT_TRUE(node_cache_ != nullptr);
 
     pano_graph_ = absl::make_unique<PanoGraph>(
-        TestDataset::kMaxGraphDepth, TestDataset::kMaxCacheSize,
-        TestDataset::kMinGraphDepth, TestDataset::kMaxGraphDepth,
-        dataset_.get());
+        TestDataset::kMaxGraphDepth, TestDataset::kMinGraphDepth,
+        TestDataset::kMaxGraphDepth, std::move(dataset_), std::move(node_cache_));
     graph_image_cache_ = absl::make_unique<GraphImageCache>(
-        Vector2_i{kScreenWidth, kScreenHeight}, std::map<std::string, Color>{});
+        Vector2_i{kScreenWidth, kScreenHeight}, std::map<std::string, Color>{},
+        kBlackOnWhite);
 
     // Build the pano graph.
     pano_graph_->SetRandomSeed(0);
@@ -71,13 +76,15 @@ class GraphRendererTest : public testing::Test {
 
     // Create the graph renderer.
     graph_renderer_ = GraphRenderer::Create(
-        *pano_graph_, Vector2_i(kScreenWidth, kScreenHeight), *kColoredPanos);
+        *pano_graph_, Vector2_i(kScreenWidth, kScreenHeight), *kColoredPanos,
+        kBlackOnWhite);
   }
 
   std::unique_ptr<GraphRenderer> graph_renderer_;
 
  private:
-  std::unique_ptr<const Dataset> dataset_;
+  std::unique_ptr<Dataset> dataset_;
+  std::unique_ptr<NodeCache> node_cache_;
   std::unique_ptr<PanoGraph> pano_graph_;
   std::unique_ptr<GraphImageCache> graph_image_cache_;
 };

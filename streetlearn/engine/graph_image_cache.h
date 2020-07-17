@@ -38,10 +38,12 @@ namespace streetlearn {
 class GraphImageCache {
  public:
   explicit GraphImageCache(const Vector2_i& screen_size,
-                           const std::map<std::string, Color>& highlighted)
+                           const std::map<std::string, Color>& highlighted,
+                           const bool black_on_white)
       : screen_size_(screen_size),
         region_manager_(screen_size),
-        highlighted_nodes_(highlighted) {}
+        highlighted_nodes_(highlighted),
+        black_on_white_(black_on_white) {}
 
   GraphImageCache(const GraphRegionMapper&) = delete;
   GraphImageCache& operator=(const GraphRegionMapper&) = delete;
@@ -104,6 +106,9 @@ class GraphImageCache {
 
   // Collection of nodes that need colored.
   std::map<std::string, Color> highlighted_nodes_;
+
+  // The color inversion flag for black on white.
+  bool black_on_white_;
 
   // Cache of images at different zoom levels.
   absl::node_hash_map<double, Image4_b> image_cache_;

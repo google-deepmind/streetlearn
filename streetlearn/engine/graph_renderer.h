@@ -54,7 +54,7 @@ class GraphRenderer {
  public:
   static std::unique_ptr<GraphRenderer> Create(
       const PanoGraph& graph, const Vector2_i& screen_size,
-      const std::map<std::string, Color>& highlight);
+      const std::map<std::string, Color>& highlight, const bool black_on_white);
 
   GraphRenderer(const GraphRenderer&) = delete;
   GraphRenderer& operator=(const GraphRenderer&) = delete;
@@ -78,7 +78,8 @@ class GraphRenderer {
 
  private:
   GraphRenderer(const PanoGraph& graph, const Vector2_i& screen_size,
-                const std::map<std::string, Color>& highlight);
+                const std::map<std::string, Color>& highlight,
+                const bool black_on_white);
 
   // Builds an RTree of graph nodes.
   bool BuildRTree();

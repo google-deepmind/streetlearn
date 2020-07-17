@@ -16,9 +16,21 @@
 
 namespace streetlearn {
 
+std::unique_ptr<NodeCache> CreateNodeCache(const Dataset* dataset,
+                                           int thread_count,
+                                           std::size_t max_size) {
+  if (!dataset) {
+    LOG(ERROR) << "No dataset supplied. Cannot create node cache.";
+    return nullptr;
+  }
+
+  return absl::make_unique<NodeCache>(dataset, thread_count, max_size);
+}
+
 NodeCache::NodeCache(const Dataset* dataset, int thread_count,
                      std::size_t max_size)
     : max_size_(max_size),
+      cache_size_(0),
       pano_fetcher_(dataset, thread_count,
                     [this](absl::string_view pano_id,
                            std::shared_ptr<const PanoGraphNode> node) {
@@ -29,6 +41,7 @@ bool NodeCache::Lookup(const std::string& pano_id, LoadCallback callback) {
   absl::MutexLock lock(&mutex_);
   auto it = cache_lookup_.find(pano_id);
   if (it == cache_lookup_.end()) {
+    cache_size_ = cache_list_.size();
     pano_fetcher_.FetchAsync(pano_id);
     callbacks_[pano_id].push_front(std::move(callback));
     return false;

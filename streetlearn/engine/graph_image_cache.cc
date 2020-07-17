@@ -36,8 +36,10 @@ constexpr int kNodeRadius = 2;
 constexpr double kLineWidth = 0.5;
 
 // All color vectors interpreted as {r, g, b}
-Color BackColor() { return {0, 0, 0}; }
-Color NodeColor() { return {1, 1, 1}; }
+Color BlackColor() { return {0, 0, 0}; }
+Color WhiteColor() { return {1, 1, 1}; }
+Color BackColor(bool b_on_w) { return b_on_w ? WhiteColor() : BlackColor(); }
+Color NodeColor(bool b_on_w) { return b_on_w ? BlackColor() : WhiteColor(); }
 Color EdgeColor() { return {0.4, 0.4, 0.4}; }
 
 }  // namespace
@@ -102,7 +104,7 @@ void GraphImageCache::RenderLevel() {
                           it->second.height());
 
   // Draw the background.
-  auto back_color = BackColor();
+  auto back_color = BackColor(black_on_white_);
   cairo_set_source_rgb(cairo.context(), back_color.red, back_color.green,
                        back_color.blue);
   cairo_paint(cairo.context());
@@ -146,7 +148,8 @@ void GraphImageCache::DrawNodes(int image_width, int image_height,
                                                    image_width, image_height);
     auto iter = highlighted_nodes_.find(node.first);
     const Color& color =
-        iter != highlighted_nodes_.end() ? iter->second : NodeColor();
+        iter != highlighted_nodes_.end() ? iter->second :
+        NodeColor(black_on_white_);
     cairo_set_source_rgb(context, color.red, color.green, color.blue);
     cairo_arc(context, coords.x(), coords.y(), kNodeRadius, 0, 2 * M_PI);
     cairo_fill(context);

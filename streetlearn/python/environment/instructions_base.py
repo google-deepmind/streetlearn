@@ -25,6 +25,7 @@ import collections
 from absl import logging
 import numpy as np
 
+from streetlearn.engine.python import color
 from streetlearn.python.environment import coin_game
 from streetlearn.python.environment import thumbnail_helper
 
@@ -46,9 +47,9 @@ class InstructionsBase(coin_game.CoinGame):
     super(InstructionsBase, self).__init__(config)
 
     self._colors.update({
-        'goal': config['color_for_goal'],
-        'waypoint': config['color_for_waypoint'],
-        'shortest_path': config['color_for_shortest_path'],
+        'goal': color.Color(*config['color_for_goal']),
+        'waypoint': color.Color(*config['color_for_waypoint']),
+        'shortest_path': color.Color(*config['color_for_shortest_path']),
     })
     self._reward_at_waypoint = config['reward_at_waypoint']
     self._reward_at_goal = config['reward_at_goal']
@@ -57,7 +58,7 @@ class InstructionsBase(coin_game.CoinGame):
     self._max_instructions = config['max_instructions']
     self._thumbnail_helper = thumbnail_helper.ThumbnailHelper()
     self._thumbnails = np.zeros(
-        [self._max_instructions + 1, 3, config['width'], config['height']],
+        [self._max_instructions + 1, config['height'], config['width'], 3],
         dtype=np.uint8)
     logging.info('Using %d instructions', self._num_instructions)
     logging.info('Padding to %d instructions', self._max_instructions)

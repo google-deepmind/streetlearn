@@ -33,26 +33,29 @@
 namespace streetlearn {
 namespace {
 
-constexpr int kThreadCount = 8;
-
 class CacheTest : public ::testing::Test {
  public:
   static void SetUpTestSuite() { ASSERT_TRUE(TestDataset::Generate()); }
 
   CacheTest()
       : dataset_(CreateDataset(TestDataset::GetPath())),
-        node_cache_(dataset_.get(), kThreadCount, TestDataset::kMaxCacheSize) {}
+        node_cache_(dataset_.get(), TestDataset::kThreadCount,
+                    TestDataset::kMaxCacheSize) {}
 
   void LoadPano(const std::string& pano_id) {
     notification_ = absl::make_unique<absl::Notification>();
-    node_cache_.Lookup(pano_id,
-                       [this](const PanoGraphNode* node) { PanoLoaded(node); });
+    node_cache_.Lookup(pano_id, [this](const PanoGraphNode* node) {
+      PanoLoaded(node);
+      notification_->Notify();
+    });
     notification_->WaitForNotification();
   }
 
   void LoadPanoAsync(const std::string& pano_id) {
-    node_cache_.Lookup(pano_id,
-                       [this](const PanoGraphNode* node) { PanoLoaded(node); });
+    node_cache_.Lookup(pano_id, [this](const PanoGraphNode* node) {
+      PanoLoaded(node);
+      blockingCounter_->DecrementCount();
+    });
   }
 
   const PanoGraphNode* GetNode(const std::string& pano_id)
@@ -79,12 +82,6 @@ class CacheTest : public ::testing::Test {
     if (node != nullptr) {
       absl::WriterMutexLock lock(&mutex_);
       loaded_panos_[node->id()] = node;
-    }
-    if (notification_) {
-      notification_->Notify();
-    }
-    if (blockingCounter_) {
-      blockingCounter_->DecrementCount();
     }
   }
 

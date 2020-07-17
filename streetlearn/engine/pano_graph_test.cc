@@ -22,6 +22,7 @@
 #include "gtest/gtest.h"
 #include "absl/strings/str_cat.h"
 #include "streetlearn/engine/dataset_factory.h"
+#include "streetlearn/engine/node_cache.h"
 #include "streetlearn/engine/test_dataset.h"
 
 namespace streetlearn {
@@ -37,9 +38,13 @@ class PanoGraphTest : public ::testing::Test {
   void SetUp() {
     dataset_ = CreateDataset(TestDataset::GetPath());
     ASSERT_TRUE(dataset_ != nullptr);
+    node_cache_ = CreateNodeCache(dataset_.get(), TestDataset::kThreadCount,
+                                  TestDataset::kMaxCacheSize);
+    ASSERT_TRUE(node_cache_ != nullptr);
   }
 
-  std::unique_ptr<const Dataset> dataset_;
+  std::unique_ptr<Dataset> dataset_;
+  std::unique_ptr<NodeCache> node_cache_;
 };
 
 void TestGraph(PanoGraph* pano_graph, const std::string& root) {
@@ -86,17 +91,20 @@ TEST(StreetLearn, PanoGraphInitFailureTest) {
       CreateDataset(TestDataset::GetInvalidDatasetPath());
   ASSERT_TRUE(invalid_dataset != nullptr);
 
-  PanoGraph pano_graph(TestDataset::kMaxGraphDepth, TestDataset::kMaxCacheSize,
-                       TestDataset::kMinGraphDepth, TestDataset::kMaxGraphDepth,
-                       invalid_dataset.get());
+  std::unique_ptr<NodeCache> node_cache =
+      CreateNodeCache(invalid_dataset.get(), TestDataset::kThreadCount,
+                      TestDataset::kMaxCacheSize);
+  PanoGraph pano_graph(TestDataset::kMaxGraphDepth, TestDataset::kMinGraphDepth,
+                       TestDataset::kMaxGraphDepth, std::move(invalid_dataset),
+                       std::move(node_cache));
   // Invalid dataset.
   EXPECT_FALSE(pano_graph.Init());
 }
 
 TEST_F(PanoGraphTest, TestPanoGraph) {
-  PanoGraph pano_graph(TestDataset::kMaxGraphDepth, TestDataset::kMaxCacheSize,
-                       TestDataset::kMinGraphDepth, TestDataset::kMaxGraphDepth,
-                       dataset_.get());
+  PanoGraph pano_graph(TestDataset::kMaxGraphDepth, TestDataset::kMinGraphDepth,
+                       TestDataset::kMaxGraphDepth, std::move(dataset_),
+                       std::move(node_cache_));
   pano_graph.SetRandomSeed(0);
   // Valid metadata filename.
   ASSERT_TRUE(pano_graph.Init());
@@ -130,19 +138,19 @@ TEST_F(PanoGraphTest, TestPanoGraph) {
 }
 
 TEST_F(PanoGraphTest, InvalidGraphSizeTest) {
-  PanoGraph pano_graph(TestDataset::kMaxGraphDepth, TestDataset::kMaxCacheSize,
+  PanoGraph pano_graph(TestDataset::kMaxGraphDepth,
                        2 * TestDataset::kMaxGraphDepth,
-                       2 * TestDataset::kMaxGraphDepth, dataset_.get());
+                       2 * TestDataset::kMaxGraphDepth, std::move(dataset_),
+                       std::move(node_cache_));
   ASSERT_TRUE(pano_graph.Init());
   EXPECT_FALSE(pano_graph.BuildRandomGraph());
 }
 
 TEST_F(PanoGraphTest, InvalidPanosTest) {
-  PanoGraph pano_graph(TestDataset::kMaxGraphDepth, TestDataset::kMaxCacheSize,
-                       TestDataset::kMinGraphDepth, TestDataset::kMaxGraphDepth,
-                       dataset_.get());
+  PanoGraph pano_graph(TestDataset::kMaxGraphDepth, TestDataset::kMinGraphDepth,
+                       TestDataset::kMaxGraphDepth, std::move(dataset_),
+                       std::move(node_cache_));
   ASSERT_TRUE(pano_graph.Init());
-
   EXPECT_FALSE(pano_graph.BuildGraphWithRoot(""));
 
   std::string bogus_id = "-1";
@@ -150,9 +158,10 @@ TEST_F(PanoGraphTest, InvalidPanosTest) {
 }
 
 TEST_F(PanoGraphTest, TerminalBearingTest) {
-  PanoGraph pano_graph(TestDataset::kMaxGraphDepth, TestDataset::kMaxCacheSize,
+  PanoGraph pano_graph(TestDataset::kMaxGraphDepth,
                        TestDataset::kMinGraphDepth / 2,
-                       TestDataset::kMaxGraphDepth / 2, dataset_.get());
+                       TestDataset::kMaxGraphDepth / 2, std::move(dataset_),
+                       std::move(node_cache_));
   ASSERT_TRUE(pano_graph.Init());
   EXPECT_TRUE(pano_graph.BuildGraphWithRoot("5"));
 
@@ -167,9 +176,10 @@ TEST_F(PanoGraphTest, TerminalBearingTest) {
 }
 
 TEST_F(PanoGraphTest, PanoCalculationTest) {
-  PanoGraph pano_graph(TestDataset::kMaxGraphDepth, 42 /* large cache */,
+  PanoGraph pano_graph(TestDataset::kMaxGraphDepth,
                        TestDataset::kMinGraphDepth / 2,
-                       TestDataset::kMaxGraphDepth / 2, dataset_.get());
+                       TestDataset::kMaxGraphDepth / 2, std::move(dataset_),
+                       std::move(node_cache_));
   ASSERT_TRUE(pano_graph.Init());
   EXPECT_TRUE(pano_graph.BuildGraphWithRoot("1"));
 

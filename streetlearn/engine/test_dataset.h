@@ -58,6 +58,7 @@ class TestDataset {
   static constexpr int kMaxGraphDepth = 10;
   static constexpr int kMaxNeighborDepth = 1;
 
+  static constexpr int kThreadCount = 8;
   static constexpr int kMaxCacheSize = 8;
 
   // Create a test dataset of kPanoCount panos on a line with IDs 1..kPanoCount.

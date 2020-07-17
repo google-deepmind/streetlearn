@@ -29,6 +29,7 @@
 #include "streetlearn/engine/graph_renderer.h"
 #include "streetlearn/engine/math_util.h"
 #include "streetlearn/engine/metadata_cache.h"
+#include "streetlearn/engine/node_cache.h"
 #include "streetlearn/engine/pano_graph.h"
 #include "streetlearn/engine/pano_graph_node.h"
 #include "streetlearn/engine/pano_renderer.h"
@@ -59,10 +60,27 @@ class StreetLearnEngine {
       int field_of_view = 60, int min_graph_depth = 10,
       int max_graph_depth = 15, int max_cache_size = 1000);
 
-  StreetLearnEngine(std::unique_ptr<Dataset> dataset,
+  // Clones an instance of the StreetLearnEngine, that shares the same dataset
+  // and node_cache as the original.
+  // Arguments:
+  //   width: width of the street image.
+  //   height: height of the street image.
+  //   graph_width: width of the map graph image.
+  //   graph_height: height of the map graph image.
+  //   status_height: height of the status bar at the bottom of the screen.
+  //   field_of_view: field of view covered by the screen.
+  //   min_graph_depth: minimum depth of graphs created.
+  //   max_graph_depth: maximum depth of graphs created.
+  std::unique_ptr<StreetLearnEngine> Clone(
+      int width = 320, int height = 240, int graph_width = 320,
+      int graph_height = 240, int status_height = 10, int field_of_view = 60,
+      int min_graph_depth = 10, int max_graph_depth = 15);
+
+  StreetLearnEngine(std::shared_ptr<Dataset> dataset,
+                    std::shared_ptr<NodeCache> node_cache,
                     const Vector2_i& pano_size, const Vector2_i& graph_size,
                     int status_height, int field_of_view, int min_graph_depth,
-                    int max_graph_depth, int max_cache_size);
+                    int max_graph_depth);
 
   // Initialises the random number generator.
   void InitEpisode(int episode_index, int random_seed);
@@ -132,7 +150,8 @@ class StreetLearnEngine {
   // if graph renderer is initialised correctly.
   bool InitGraphRenderer(
       const Color& observer_color,
-      const std::map<std::string, Color>& panos_to_highlight);
+      const std::map<std::string, Color>& panos_to_highlight,
+      const bool black_on_white);
 
   // Renders the current graph into the buffer provided. The user is
   // responsible for providing a buffer of the correct size. Returns true is
@@ -143,6 +162,9 @@ class StreetLearnEngine {
   // Sets the current zoom factor. Returns true if zoom is successfully set.
   bool SetZoom(double zoom);
 
+  // Return the current size of the node cache.
+  int GetNodeCacheSize() { return pano_graph_.GetNodeCacheSize(); };
+
  private:
   // Sets internal state once a graph is loaded.
   std::string SetupCurrentGraph();
@@ -151,7 +173,10 @@ class StreetLearnEngine {
   void RenderScene();
 
   // StreetLearn dataset.
-  std::unique_ptr<Dataset> dataset_;
+  std::shared_ptr<Dataset> dataset_;
+
+  // Cache of StreetLearn panoramas.
+  std::shared_ptr<NodeCache> node_cache_;
 
   // The width/height of the output pano images.
   Vector2_i pano_size_;

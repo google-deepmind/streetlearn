@@ -84,9 +84,10 @@ bool CalculateBounds(const PanoGraph& graph, double* min_lat, double* max_lat,
 
 std::unique_ptr<GraphRenderer> GraphRenderer::Create(
     const PanoGraph& graph, const Vector2_i& screen_size,
-    const std::map<std::string, Color>& highlight) {
+    const std::map<std::string, Color>& highlight, const bool black_on_white) {
   auto graph_renderer =
-      absl::WrapUnique(new GraphRenderer(graph, screen_size, highlight));
+      absl::WrapUnique(new GraphRenderer(graph, screen_size, highlight,
+                                         black_on_white));
   if (!graph_renderer->InitRenderer()) {
     LOG(ERROR) << "Failed to initialize GraphRenderer";
     return nullptr;
@@ -96,12 +97,13 @@ std::unique_ptr<GraphRenderer> GraphRenderer::Create(
 
 GraphRenderer::GraphRenderer(const PanoGraph& graph,
                              const Vector2_i& screen_size,
-                             const std::map<std::string, Color>& highlight)
+                             const std::map<std::string, Color>& highlight,
+                             const bool black_on_white)
     : screen_size_(screen_size),
       pixel_buffer_(screen_size.x(), screen_size.y()),
       cairo_(pixel_buffer_.pixel(0, 0), screen_size.x(), screen_size.y()),
       pano_graph_(graph),
-      image_cache_(screen_size, highlight) {}
+      image_cache_(screen_size, highlight, black_on_white) {}
 
 bool GraphRenderer::InitRenderer() {
   // Initialise to the extents and calculate bounds.
@@ -170,7 +172,7 @@ bool GraphRenderer::SetSceneBounds(absl::string_view pano_id) {
   double lat_centre, lng_centre;
   if (current_zoom > 1 && !pano_id.empty()) {
     PanoMetadata node_data;
-    if (!pano_graph_.Metadata(string(pano_id), &node_data)) {
+    if (!pano_graph_.Metadata(std::string(pano_id), &node_data)) {
       return false;
     }
     lat_centre = node_data.pano.coords().lat();
